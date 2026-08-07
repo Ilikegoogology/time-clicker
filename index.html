@@ -570,4 +570,336 @@
         const clickBtn = document.getElementById('click-btn');
         const upgradeListEl = document.getElementById('upgrade-list');
         const achievementsGridEl = document.getElementById('achievements-grid');
-        const achievementCo
+        const achievementCountEl = document.getElementById('achievement-count');
+        const toastContainer = document.getElementById('toast-container');
+
+        // Number Formatter
+        function formatNumber(num) {
+            if (num >= 1e9) return (num / 1e9).toFixed(2) + "B";
+            if (num >= 1e6) return (num / 1e6).toFixed(2) + "M";
+            if (num >= 1e3) return (num / 1e3).toFixed(1) + "k";
+            return Math.floor(num).toLocaleString();
+        }
+
+        function formatTimeReadable(totalSeconds) {
+            let s = Math.floor(totalSeconds);
+            const years = Math.floor(s / (365 * 24 * 3600));
+            s %= (365 * 24 * 3600);
+            const days = Math.floor(s / (24 * 3600));
+            s %= (24 * 3600);
+            const hours = Math.floor(s / 3600);
+            s %= 3600;
+            const minutes = Math.floor(s / 60);
+            const seconds = s % 60;
+
+            let parts = [];
+            if (years > 0) parts.push(`${years}y`);
+            if (days > 0) parts.push(`${days}d`);
+            if (hours > 0) parts.push(`${hours}h`);
+            if (minutes > 0 || hours > 0 || days > 0 || years > 0) parts.push(`${minutes}m`);
+            parts.push(`${seconds}s`);
+
+            return parts.slice(0, 3).join(' ');
+        }
+
+        // Global Multipliers Calculation
+        function getGlobalMultiplier() {
+            let mult = 1.0;
+            
+            // Overclock upgrade (1.5x per level)
+            mult *= Math.pow(1.5, game.upgrades.overclock.count);
+
+            // Synergy upgrade (+2% per upgrade owned)
+            if (game.upgrades.synergy.count > 0) {
+                mult *= (1 + (game.upgradesBought * 0.02 * game.upgrades.synergy.count));
+            }
+
+            // Paradox loop (2x per level)
+            mult *= Math.pow(2, game.upgrades.paradox.count);
+
+            return mult;
+        }
+
+        function getSPS() {
+            let baseSPS = 0;
+            for (let id in game.upgrades) {
+                if (game.upgrades[id].type === "passive") {
+                    baseSPS += game.upgrades[id].count * game.upgrades[id].power;
+                }
+            }
+
+            let mult = getGlobalMultiplier();
+
+            // Chronos Formula boost
+            if (game.upgrades.chronos.count > 0) {
+                const chronosBoost = 1 + (Math.sqrt(game.maxSeconds) * 0.001 * game.upgrades.chronos.count);
+                mult *= chronosBoost;
+            }
+
+            return baseSPS * mult;
+        }
+
+        function getClickPower() {
+            let basePower = 1;
+            for (let id in game.upgrades) {
+                if (game.upgrades[id].type === "click") {
+                    basePower += game.upgrades[id].count * game.upgrades[id].power;
+                }
+            }
+
+            let mult = getGlobalMultiplier();
+
+            // Kinetic Momentum boost
+            if (game.upgrades.kinetic.count > 0) {
+                const kineticBoost = 1 + (Math.log10(game.totalClicks + 1) * 0.5 * game.upgrades.kinetic.count);
+                mult *= kineticBoost;
+            }
+
+            return basePower * mult;
+        }
+
+        // Achievements Logic
+        function checkAchievements() {
+            ACHIEVEMENTS.forEach(ach => {
+                if (!game.unlockedAchievements[ach.id] && ach.req()) {
+                    unlockAchievement(ach.id);
+                }
+            });
+        }
+
+        function unlockAchievement(id) {
+            if (game.unlockedAchievements[id]) return;
+
+            const ach = ACHIEVEMENTS.find(a => a.id === id);
+            if (!ach) return;
+
+            game.unlockedAchievements[id] = true;
+            showToast(ach);
+            renderAchievements();
+            saveGame();
+        }
+
+        function showToast(ach) {
+            const toast = document.createElement('div');
+            const isGlitched = ach.diff === 'glitched';
+            
+            toast.className = `toast ${isGlitched ? 'glitch-toast' : ''}`;
+            toast.innerHTML = `
+                <div style="font-size: 1.8rem;">${ach.icon}</div>
+                <div>
+                    <div style="font-size:0.7rem; color: var(--gold-color); font-weight: bold; text-transform: uppercase;">Achievement Unlocked!</div>
+                    <div style="font-weight: bold;" class="${isGlitched ? 'glitch-text' : ''}">${ach.name}</div>
+                </div>
+            `;
+            toastContainer.appendChild(toast);
+
+            setTimeout(() => { toast.remove(); }, 4000);
+        }
+
+        function renderAchievements() {
+            achievementsGridEl.innerHTML = '';
+            let unlockedTotal = 0;
+
+            ACHIEVEMENTS.forEach(ach => {
+                const isUnlocked = !!game.unlockedAchievements[ach.id];
+                if (isUnlocked) unlockedTotal++;
+
+                const card = document.createElement('div');
+                const isGlitched = ach.diff === 'glitched';
+
+                card.className = `achievement-card ${isUnlocked ? (isGlitched ? 'glitched-unlocked' : 'unlocked') : ''}`;
+                
+                const titleText = (ach.secret && !isUnlocked) ? '???' : ach.name;
+                const descText = (ach.secret && !isUnlocked) ? 'Secret achievement. Figure out how to unlock it!' : ach.desc;
+                const iconText = isUnlocked ? ach.icon : '🔒';
+
+                card.innerHTML = `
+                    <div class="achievement-icon">${iconText}</div>
+                    <div class="achievement-details">
+                        <div class="achievement-header">
+                            <span class="achievement-title ${isUnlocked && isGlitched ? 'glitch-text' : ''}">${titleText}</span>
+                            <span class="diff-tag diff-${ach.diff}">${ach.diff}</span>
+                        </div>
+                        <span class="achievement-desc">${descText}</span>
+                    </div>
+                `;
+
+                achievementsGridEl.appendChild(card);
+            });
+
+            achievementCountEl.textContent = `${unlockedTotal} / ${ACHIEVEMENTS.length}`;
+        }
+
+        // Render Upgrades UI
+        function createUpgradeUI() {
+            upgradeListEl.innerHTML = '';
+            for (let id in game.upgrades) {
+                const upg = game.upgrades[id];
+
+                const item = document.createElement('div');
+                item.className = 'upgrade-item';
+                
+                let badgeClass = "badge-click";
+                let badgeText = "CLICK";
+                if (upg.type === "passive") { badgeClass = "badge-passive"; badgeText = "PASSIVE"; }
+                if (upg.type === "formula") { badgeClass = "badge-formula"; badgeText = "FORMULA"; }
+
+                item.innerHTML = `
+                    <div class="upgrade-info">
+                        <span class="upgrade-name">
+                            ${upg.name} (${upg.count})
+                            <span class="badge ${badgeClass}">${badgeText}</span>
+                        </span>
+                        <span class="upgrade-desc">${upg.desc}</span>
+                    </div>
+                    <button class="upgrade-btn" id="btn-${id}">
+                        ${formatNumber(upg.cost)}s
+                    </button>
+                `;
+
+                upgradeListEl.appendChild(item);
+                document.getElementById(`btn-${id}`).addEventListener('click', () => buyUpgrade(id));
+            }
+        }
+
+        // Update UI Loop
+        function updateUI() {
+            secondsEl.textContent = `${formatNumber(game.seconds)}s`;
+            formattedEl.textContent = formatTimeReadable(game.seconds);
+            spcEl.textContent = `+${formatNumber(getClickPower())}s`;
+            spsEl.textContent = `${formatNumber(getSPS())}s/sec`;
+            clicksEl.textContent = formatNumber(game.totalClicks);
+
+            // Update upgrade buttons
+            for (let id in game.upgrades) {
+                const upg = game.upgrades[id];
+                const btn = document.getElementById(`btn-${id}`);
+                if (btn) {
+                    btn.disabled = game.seconds < upg.cost;
+                    btn.innerHTML = `${formatNumber(upg.cost)}s`;
+                    const nameEl = btn.parentElement.querySelector('.upgrade-name');
+                    nameEl.childNodes[0].textContent = `${upg.name} (${upg.count}) `;
+                }
+            }
+        }
+
+        // Buy Upgrade Logic
+        function buyUpgrade(id) {
+            const upg = game.upgrades[id];
+            if (game.seconds >= upg.cost) {
+                game.seconds -= upg.cost;
+                upg.count++;
+                game.upgradesBought++;
+                upg.cost = Math.floor(upg.cost * (upg.type === "formula" ? 2.5 : 1.15));
+                checkAchievements();
+                updateUI();
+            }
+        }
+
+        // Click Action
+        clickBtn.addEventListener('click', (e) => {
+            const addedSeconds = getClickPower();
+            game.seconds += addedSeconds;
+            game.maxSeconds += addedSeconds;
+            game.totalClicks++;
+
+            // Spawn floating text
+            const text = document.createElement('div');
+            text.className = 'floating-text';
+            text.textContent = `+${formatNumber(addedSeconds)}s`;
+            
+            const rect = clickBtn.getBoundingClientRect();
+            const x = e.clientX - rect.left - 20;
+            const y = e.clientY - rect.top - 20;
+
+            text.style.left = `${x}px`;
+            text.style.top = `${y}px`;
+
+            clickBtn.parentElement.appendChild(text);
+            setTimeout(() => text.remove(), 800);
+
+            checkAchievements();
+            updateUI();
+        });
+
+        // Loop
+        function gameLoop() {
+            const now = Date.now();
+            const delta = (now - game.lastTick) / 1000;
+            game.lastTick = now;
+
+            const gained = getSPS() * delta;
+            game.seconds += gained;
+            game.maxSeconds += gained;
+
+            checkAchievements();
+            updateUI();
+        }
+
+        // DevTools F12 Secret Detection
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'F12' || 
+               (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
+               (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'i'))) {
+                unlockAchievement('f12_secret');
+            }
+        });
+
+        const element = new Image();
+        Object.defineProperty(element, 'id', {
+            get: function () { unlockAchievement('f12_secret'); }
+        });
+        setInterval(() => { console.log('%c', element); }, 2000);
+
+        // Save & Load
+        function saveGame() {
+            localStorage.setItem('timeClickerSave', JSON.stringify(game));
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem('timeClickerSave');
+            if (saved) {
+                const loaded = JSON.parse(saved);
+                
+                game.seconds = loaded.seconds || 0;
+                game.maxSeconds = loaded.maxSeconds || game.seconds;
+                game.totalClicks = loaded.totalClicks || 0;
+                game.upgradesBought = loaded.upgradesBought || 0;
+                game.lastTick = Date.now();
+                game.unlockedAchievements = loaded.unlockedAchievements || {};
+
+                if (loaded.upgrades) {
+                    for (let id in loaded.upgrades) {
+                        if (game.upgrades[id]) {
+                            game.upgrades[id].count = loaded.upgrades[id].count || 0;
+                            game.upgrades[id].cost = loaded.upgrades[id].cost || game.upgrades[id].cost;
+                        }
+                    }
+                }
+            }
+        }
+
+        function resetGame() {
+            if (confirm("Are you sure you want to reset all progress and achievements?")) {
+                localStorage.removeItem('timeClickerSave');
+                location.reload();
+            }
+        }
+
+        document.getElementById('save-btn').addEventListener('click', () => {
+            saveGame();
+            alert("Game saved!");
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', resetGame);
+
+        setInterval(saveGame, 10000);
+
+        // Init
+        loadGame();
+        createUpgradeUI();
+        renderAchievements();
+        setInterval(gameLoop, 100);
+    </script>
+</body>
+</html>
