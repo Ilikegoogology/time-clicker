@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Clicker - Expanded</title>
+    <title>Time Clicker - Glitched Update</title>
     <style>
         :root {
-            --bg-color: #080c14;
-            --card-bg: #111827;
+            --bg-color: #060911;
+            --card-bg: #0f172a;
             --accent-color: #00f0ff;
             --accent-hover: #00b8cc;
+            --cosmic-color: #a855f7;
+            --cosmic-hover: #9333ea;
             --gold-color: #ffd700;
             --text-color: #f1f5f9;
             --subtext-color: #94a3b8;
@@ -58,10 +60,10 @@
             grid-template-columns: 1fr;
             gap: 20px;
             width: 100%;
-            max-width: 1050px;
+            max-width: 1100px;
         }
 
-        @media (min-width: 850px) {
+        @media (min-width: 900px) {
             .container {
                 grid-template-columns: 1fr 1fr;
             }
@@ -74,14 +76,21 @@
             background-color: var(--card-bg);
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.07);
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* Time Display Panel */
+        /* Universify Card Theme */
+        .card-cosmic {
+            background: linear-gradient(135deg, #180d2b 0%, #0f172a 100%);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+        }
+
+        /* Time Display */
         .time-display {
             text-align: center;
             width: 100%;
@@ -105,26 +114,28 @@
 
         .stats-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: repeat(4, 1fr);
             gap: 8px;
             width: 100%;
             margin-top: 10px;
             text-align: center;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         .stat-box {
             background: rgba(0, 0, 0, 0.35);
-            padding: 8px;
+            padding: 8px 4px;
             border-radius: 8px;
         }
 
         .stat-value {
             font-weight: bold;
             color: var(--accent-color);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             margin-top: 3px;
         }
+
+        .stat-value.cosmic { color: #c084fc; }
 
         /* Click Button */
         .click-area {
@@ -152,7 +163,7 @@
             box-shadow: 0 0 35px rgba(0, 240, 255, 0.6);
         }
 
-        /* Floating Animation */
+        /* Floating Text Effect */
         .floating-text {
             position: absolute;
             color: var(--accent-color);
@@ -167,7 +178,60 @@
             100% { opacity: 0; transform: translateY(-50px); }
         }
 
-        /* Panel Headers & Lists */
+        /* Universify Button */
+        .universify-btn {
+            background: linear-gradient(90deg, #9333ea, #c084fc, #9333ea);
+            background-size: 200% 200%;
+            animation: cosmicGradient 2s infinite linear;
+            color: #fff;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.5);
+            transition: transform 0.2s;
+        }
+
+        .universify-btn:hover:not(:disabled) {
+            transform: scale(1.02);
+        }
+
+        .universify-btn:disabled {
+            background: var(--disabled-color);
+            color: #64748b;
+            box-shadow: none;
+            cursor: not-allowed;
+            animation: none;
+        }
+
+        @keyframes cosmicGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Progress Bar */
+        .progress-bar-bg {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #a855f7, #00f0ff);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Headers & Upgrade Lists */
         .panel-header {
             font-size: 1.3rem;
             font-weight: bold;
@@ -185,7 +249,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            max-height: 520px;
+            max-height: 480px;
             overflow-y: auto;
             padding-right: 5px;
         }
@@ -231,6 +295,7 @@
         .badge-click { background: rgba(0, 240, 255, 0.2); color: var(--accent-color); }
         .badge-passive { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
         .badge-formula { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+        .badge-cosmic { background: rgba(255, 215, 0, 0.2); color: var(--gold-color); }
 
         .upgrade-btn {
             background-color: var(--accent-color);
@@ -245,7 +310,12 @@
             white-space: nowrap;
         }
 
-        .upgrade-btn:hover { background-color: var(--accent-hover); }
+        .upgrade-btn.cosmic-btn {
+            background-color: var(--cosmic-color);
+            color: #fff;
+        }
+
+        .upgrade-btn:hover:not(:disabled) { opacity: 0.9; }
         .upgrade-btn:disabled {
             background-color: var(--disabled-color);
             color: #64748b;
@@ -439,7 +509,7 @@
     </header>
 
     <div class="container">
-        <!-- Clicker & Counter Panel -->
+        <!-- Clicker & Display Panel -->
         <div class="card time-display">
             <div class="seconds-total" id="seconds-display">0s</div>
             <div class="time-formatted" id="time-formatted-display">0m 0s</div>
@@ -454,12 +524,16 @@
                     <div class="stat-value" id="spc-display">+1s</div>
                 </div>
                 <div class="stat-box">
-                    <div>Per Second</div>
+                    <div>Per Sec</div>
                     <div class="stat-value" id="sps-display">0s/sec</div>
                 </div>
                 <div class="stat-box">
-                    <div>Total Clicks</div>
+                    <div>Clicks</div>
                     <div class="stat-value" id="clicks-display">0</div>
+                </div>
+                <div class="stat-box">
+                    <div>Universes</div>
+                    <div class="stat-value cosmic" id="universes-display">0</div>
                 </div>
             </div>
         </div>
@@ -467,10 +541,38 @@
         <!-- Upgrades Panel -->
         <div class="card">
             <div class="panel-header">
-                <span>Upgrades</span>
+                <span>Standard Upgrades</span>
             </div>
             <div class="upgrade-list" id="upgrade-list">
                 <!-- Upgrades generated dynamically -->
+            </div>
+        </div>
+
+        <!-- Universify Prestige Panel -->
+        <div class="card full-width card-cosmic">
+            <div class="panel-header">
+                <span style="color: #c084fc;">🌌 Universify (Prestige Reset)</span>
+                <span id="universify-gain-display" style="font-size: 0.9rem; color: var(--gold-color);">+0 Universes</span>
+            </div>
+            <div style="width: 100%; text-align: center; font-size: 0.9rem; color: var(--subtext-color);">
+                Reset your seconds and normal upgrades to collapse the timeline into <b>Universes</b>. <br>
+                <i>Reference: Unlocks at <b>13.8 Billion Seconds</b> (the age of the observable universe in years!).</i>
+            </div>
+
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="universify-progress"></div>
+            </div>
+
+            <button class="universify-btn" id="universify-btn" disabled>
+                🌌 UNIVERSIFY (Req: 13.80B Seconds)
+            </button>
+
+            <!-- Cosmic Upgrades -->
+            <div style="width:100%; margin-top:20px;">
+                <div style="font-weight:bold; margin-bottom:10px; color:#c084fc;">Cosmic Upgrades (Bought with Universes)</div>
+                <div class="upgrade-list" id="cosmic-upgrade-list">
+                    <!-- Cosmic Upgrades generated dynamically -->
+                </div>
             </div>
         </div>
 
@@ -494,91 +596,24 @@
     <div id="toast-container"></div>
 
     <script>
-        // Game State
-        let game = {
-            seconds: 0,
-            maxSeconds: 0,
-            totalClicks: 0,
-            upgradesBought: 0,
-            lastTick: Date.now(),
-            upgrades: {
-                // Click Upgrades
-                watch: { name: "Digital Watch", cost: 15, power: 1, type: "click", count: 0, desc: "+1s per click" },
-                gear: { name: "Clockwork Gears", cost: 100, power: 5, type: "click", count: 0, desc: "+5s per click" },
-                pointer: { name: "Quantum Pointer", cost: 800, power: 30, type: "click", count: 0, desc: "+30s per click" },
-                glove: { name: "Chrono-Glove", cost: 5000, power: 250, type: "click", count: 0, desc: "+250s per click" },
-                dilationTap: { name: "Time-Dilation Tap", cost: 50000, power: 2000, type: "click", count: 0, desc: "+2,000s per click" },
-                lightSpeed: { name: "Light-Speed Clicker", cost: 500000, power: 18000, type: "click", count: 0, desc: "+18,000s per click" },
+        const UNIVERSIFY_REQ = 13800000000; // 13.8 Billion Seconds
 
-                // Passive Upgrades
-                hourglass: { name: "Hourglass", cost: 20, power: 1, type: "passive", count: 0, desc: "+1s per sec" },
-                grandfather: { name: "Grandfather Clock", cost: 150, power: 5, type: "passive", count: 0, desc: "+5s per sec" },
-                atomic: { name: "Atomic Clock", cost: 1200, power: 45, type: "passive", count: 0, desc: "+45s per sec" },
-                timemachine: { name: "Time Machine", cost: 10000, power: 400, type: "passive", count: 0, desc: "+400s per sec" },
-                wormhole: { name: "Temporal Wormhole", cost: 100000, power: 5000, type: "passive", count: 0, desc: "+5,000s per sec" },
-                singularity: { name: "Singularity Core", cost: 1000000, power: 60000, type: "passive", count: 0, desc: "+60,000s per sec" },
-
-                // Formula & Multiplier Upgrades
-                overclock: { name: "Overclocked Escapement", cost: 500, type: "formula", count: 0, desc: "Multiplies ALL time gains by 1.5x" },
-                kinetic: { name: "Kinetic Momentum", cost: 2500, type: "formula", count: 0, desc: "Boosts Click Power based on total clicks" },
-                synergy: { name: "Temporal Synergizer", cost: 15000, type: "formula", count: 0, desc: "+2% global speed for every upgrade owned" },
-                chronos: { name: "Chronos Formula", cost: 75000, type: "formula", count: 0, desc: "Boosts passive speed based on lifetime time" },
-                paradox: { name: "Paradox Loop", cost: 5000000, type: "formula", count: 0, desc: "Doubles total time generation!" }
-            },
-            unlockedAchievements: {}
-        };
-
-        // Achievement Definitions
-        const ACHIEVEMENTS = [
-            // Easy
-            { id: "ticking_time", name: "Ticking Time", desc: "Accumulate 1 second of time.", icon: "⏱️", diff: "easy", req: () => game.maxSeconds >= 1 },
-            { id: "first_touch", name: "First Touch", desc: "Click the TICK TIME button once.", icon: "👆", diff: "easy", req: () => game.totalClicks >= 1 },
-            { id: "wait_a_minute", name: "Wait a Minute", desc: "Reach 1 minute (60s) of time.", icon: "⌛", diff: "easy", req: () => game.maxSeconds >= 60 },
-
-            // Medium
-            { id: "finger_workout", name: "Finger Workout", desc: "Click the time button 100 times.", icon: "🥊", diff: "medium", req: () => game.totalClicks >= 100 },
-            { id: "patience", name: "Pure Patience", desc: "Reach 300s (5 mins) without buying ANY upgrades!", icon: "🧘", diff: "medium", req: () => game.maxSeconds >= 300 && game.upgradesBought === 0 },
-            { id: "time_collector", name: "Time Collector", desc: "Own 10 total upgrades.", icon: "📦", diff: "medium", req: () => game.upgradesBought >= 10 },
-
-            // Hard
-            { id: "zzz", name: "ZZZ", desc: "Reach 12 hours (43,200s) of time.", icon: "😴", diff: "hard", req: () => game.maxSeconds >= 43200 },
-            { id: "click_marathon", name: "Click Marathon", desc: "Click the button 1,000 times.", icon: "🏃", diff: "hard", req: () => game.totalClicks >= 1000 },
-            { id: "speed_demon", name: "Speed Demon", desc: "Reach +1,000s/sec generation.", icon: "⚡", diff: "hard", req: () => getSPS() >= 1000 },
-
-            // Extreme
-            { id: "synergy_master", name: "Synergy Master", desc: "Own at least 50 total upgrades.", icon: "🔮", diff: "extreme", req: () => game.upgradesBought >= 50 },
-            { id: "century_clicker", name: "Century Clicker", desc: "Generate +10,000s in a single click.", icon: "💥", diff: "extreme", req: () => getClickPower() >= 10000 },
-
-            // Insane
-            { id: "age", name: "Age", desc: "Reach 1 year (31,536,000s) of accumulated time.", icon: "🏛️", diff: "insane", req: () => game.maxSeconds >= 31536000 },
-            { id: "carpal_tunnel", name: "Carpal Tunnel Paradox", desc: "Click the time button 10,000 times.", icon: "🦾", diff: "insane", req: () => game.totalClicks >= 10000 },
-
-            // Wild
-            { id: "time_lord", name: "Time Lord", desc: "Reach 100 Years (3,153,600,000s) of total time.", icon: "👑", diff: "wild", req: () => game.maxSeconds >= 3153600000 },
-
-            // GLITCHED
-            { id: "f12_secret", name: "Hey! What are you doing!", desc: "Opened Developer Console / DevTools.", icon: "👾", diff: "glitched", secret: true, req: () => false },
-            { id: "temporal_glitch", name: "ERR_TEMPORAL_OVERFLOW", desc: "Trigger an insane speed multiplier or reach 1 Billion seconds.", icon: "⚠️", diff: "glitched", secret: true, req: () => game.maxSeconds >= 1000000000 }
+        // BigNum Abbreviation System
+        const SUFFIXES = [
+            "", "k", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc",
+            "Ud", "Dd", "Td", "Qad", "Qid", "Sxd", "Spd", "Ocd", "Nod", "Vg"
         ];
 
-        // DOM Elements
-        const secondsEl = document.getElementById('seconds-display');
-        const formattedEl = document.getElementById('time-formatted-display');
-        const spcEl = document.getElementById('spc-display');
-        const spsEl = document.getElementById('sps-display');
-        const clicksEl = document.getElementById('clicks-display');
-        const clickBtn = document.getElementById('click-btn');
-        const upgradeListEl = document.getElementById('upgrade-list');
-        const achievementsGridEl = document.getElementById('achievements-grid');
-        const achievementCountEl = document.getElementById('achievement-count');
-        const toastContainer = document.getElementById('toast-container');
-
-        // Number Formatter
         function formatNumber(num) {
-            if (num >= 1e9) return (num / 1e9).toFixed(2) + "B";
-            if (num >= 1e6) return (num / 1e6).toFixed(2) + "M";
-            if (num >= 1e3) return (num / 1e3).toFixed(1) + "k";
-            return Math.floor(num).toLocaleString();
+            if (num === null || num === undefined || isNaN(num)) return "0";
+            if (num < 1000) return num < 10 && num % 1 !== 0 ? num.toFixed(1) : Math.floor(num).toLocaleString();
+            
+            const e = Math.floor(Math.log10(num) / 3);
+            if (e < SUFFIXES.length) {
+                const scaled = num / Math.pow(10, e * 3);
+                return scaled.toFixed(2) + SUFFIXES[e];
+            }
+            return num.toExponential(2).replace("+", "");
         }
 
         function formatTimeReadable(totalSeconds) {
@@ -593,7 +628,7 @@
             const seconds = s % 60;
 
             let parts = [];
-            if (years > 0) parts.push(`${years}y`);
+            if (years > 0) parts.push(`${formatNumber(years)}y`);
             if (days > 0) parts.push(`${days}d`);
             if (hours > 0) parts.push(`${hours}h`);
             if (minutes > 0 || hours > 0 || days > 0 || years > 0) parts.push(`${minutes}m`);
@@ -602,20 +637,127 @@
             return parts.slice(0, 3).join(' ');
         }
 
-        // Global Multipliers Calculation
+        // Game State
+        let game = {
+            seconds: 0,
+            maxSeconds: 0,
+            totalClicks: 0,
+            upgradesBought: 0,
+            universes: 0,
+            universifyCount: 0,
+            lastTick: Date.now(),
+            upgrades: {
+                // Click Upgrades
+                watch: { name: "Digital Watch", cost: 15, power: 1, type: "click", count: 0, desc: "+1s per click" },
+                gear: { name: "Clockwork Gears", cost: 100, power: 5, type: "click", count: 0, desc: "+5s per click" },
+                pointer: { name: "Quantum Pointer", cost: 800, power: 30, type: "click", count: 0, desc: "+30s per click" },
+                glove: { name: "Chrono-Glove", cost: 5000, power: 250, type: "click", count: 0, desc: "+250s per click" },
+                dilationTap: { name: "Time-Dilation Tap", cost: 50000, power: 2000, type: "click", count: 0, desc: "+2,000s per click" },
+                tachyonBeam: { name: "Tachyon Beam", cost: 500000, power: 18000, type: "click", count: 0, desc: "+18,000s per click" },
+                bigRipClicker: { name: "Big Rip Clicker", cost: 1e9, power: 5000000, type: "click", count: 0, desc: "+5,000,000s per click" },
+
+                // Passive Upgrades
+                hourglass: { name: "Hourglass", cost: 20, power: 1, type: "passive", count: 0, desc: "+1s per sec" },
+                grandfather: { name: "Grandfather Clock", cost: 150, power: 5, type: "passive", count: 0, desc: "+5s per sec" },
+                atomic: { name: "Atomic Clock", cost: 1200, power: 45, type: "passive", count: 0, desc: "+45s per sec" },
+                timemachine: { name: "Time Machine", cost: 10000, power: 400, type: "passive", count: 0, desc: "+400s per sec" },
+                wormhole: { name: "Temporal Wormhole", cost: 100000, power: 5000, type: "passive", count: 0, desc: "+5,000s per sec" },
+                singularity: { name: "Singularity Core", cost: 1000000, power: 60000, type: "passive", count: 0, desc: "+60,000s per sec" },
+                multiverseGen: { name: "Multiverse Generator", cost: 5e8, power: 25000000, type: "passive", count: 0, desc: "+25,000,000s per sec" },
+
+                // Formula Upgrades
+                overclock: { name: "Overclocked Escapement", cost: 500, type: "formula", count: 0, desc: "Multiplies ALL time gains by 1.5x" },
+                kinetic: { name: "Kinetic Momentum", cost: 2500, type: "formula", count: 0, desc: "Boosts Click Power based on total clicks" },
+                synergy: { name: "Temporal Synergizer", cost: 15000, type: "formula", count: 0, desc: "+2% global speed per upgrade owned" },
+                chronos: { name: "Chronos Formula", cost: 75000, type: "formula", count: 0, desc: "Boosts passive speed based on lifetime time" },
+                dimFolding: { name: "Dimensional Folding", cost: 1e10, type: "formula", count: 0, desc: "Triples total time generation!" }
+            },
+            cosmicUpgrades: {
+                bigBang: { name: "Big Bang Ignition", cost: 1, count: 0, desc: "Each Universe gives +100% additional speed boost!" },
+                darkMatter: { name: "Dark Matter Engine", cost: 3, count: 0, desc: "Multiplies passive speed by 5x per level." },
+                singularityTap: { name: "Singularity Tap", cost: 5, count: 0, desc: "Multiplies click power by 10x per level." }
+            },
+            unlockedAchievements: {}
+        };
+
+        // Achievements Definition
+        const ACHIEVEMENTS = [
+            // Easy
+            { id: "ticking_time", name: "Ticking Time", desc: "Accumulate 1 second of time.", icon: "⏱️", diff: "easy", req: () => game.maxSeconds >= 1 },
+            { id: "first_touch", name: "First Touch", desc: "Click the TICK TIME button once.", icon: "👆", diff: "easy", req: () => game.totalClicks >= 1 },
+            { id: "wait_a_minute", name: "Wait a Minute", desc: "Reach 1 minute (60s) of time.", icon: "⌛", diff: "easy", req: () => game.maxSeconds >= 60 },
+
+            // Medium
+            { id: "finger_workout", name: "Finger Workout", desc: "Click the time button 100 times.", icon: "🥊", diff: "medium", req: () => game.totalClicks >= 100 },
+            { id: "patience", name: "Pure Patience", desc: "Reach 300s (5 mins) without buying ANY upgrades!", icon: "🧘", diff: "medium", req: () => game.maxSeconds >= 300 && game.upgradesBought === 0 },
+            { id: "time_collector", name: "Time Collector", desc: "Own 10 total upgrades.", icon: "📦", diff: "medium", req: () => game.upgradesBought >= 10 },
+
+            // Hard
+            { id: "zzz", name: "ZZZ", desc: "Reach 12 hours (43,200s) of time.", icon: "😴", diff: "hard", req: () => game.maxSeconds >= 43200 },
+            { id: "true_silence", name: "True Silence", desc: "Reach 1 Hour (3,600s) WITHOUT buying any upgrades!", icon: "🤫", diff: "hard", req: () => game.maxSeconds >= 3600 && game.upgradesBought === 0 },
+            { id: "click_marathon", name: "Click Marathon", desc: "Click the button 1,000 times.", icon: "🏃", diff: "hard", req: () => game.totalClicks >= 1000 },
+            { id: "speed_demon", name: "Speed Demon", desc: "Reach +1,000s/sec generation.", icon: "⚡", diff: "hard", req: () => getSPS() >= 1000 },
+
+            // Extreme
+            { id: "synergy_master", name: "Synergy Master", desc: "Own at least 50 total upgrades.", icon: "🔮", diff: "extreme", req: () => game.upgradesBought >= 50 },
+            { id: "trillionaire", name: "Trillionaire", desc: "Reach 1 Trillion (1,000,000,000,000s) seconds.", icon: "💎", diff: "extreme", req: () => game.maxSeconds >= 1e12 },
+
+            // Insane
+            { id: "carpal_tunnel", name: "Carpal Tunnel Paradox", desc: "Click the time button 10,000 times.", icon: "🦾", diff: "insane", req: () => game.totalClicks >= 10000 },
+            { id: "big_bang_precursor", name: "Big Bang Precursor", desc: "Reach 13.8 Billion seconds (Universify threshold!).", icon: "💥", diff: "insane", req: () => game.maxSeconds >= UNIVERSIFY_REQ },
+            { id: "universal_architect", name: "Universal Architect", desc: "Universify for the very first time.", icon: "🌌", diff: "insane", req: () => game.universifyCount >= 1 },
+
+            // Wild
+            { id: "multiverse_explorer", name: "Multiverse Explorer", desc: "Universify 5 times.", icon: "🌌", diff: "wild", req: () => game.universifyCount >= 5 },
+            { id: "quadrillionaire", name: "Quadrillionaire", desc: "Reach 1 Quadrillion (1e15) seconds.", icon: "✨", diff: "wild", req: () => game.maxSeconds >= 1e15 },
+
+            // GLITCHED TIER
+            { id: "age", name: "Age", desc: "Reach 1 Year (31,536,000s) WITHOUT buying a single upgrade!", icon: "🏛️", diff: "glitched", req: () => game.maxSeconds >= 31536000 && game.upgradesBought === 0 },
+            { id: "f12_secret", name: "Hey! What are you doing!", desc: "Opened Developer Console / DevTools.", icon: "👾", diff: "glitched", secret: true, req: () => false },
+            { id: "reality_break", name: "REALITY_BREAK", desc: "Reach 1 Quintillion (1e18) total seconds.", icon: "☣️", diff: "glitched", secret: true, req: () => game.maxSeconds >= 1e18 }
+        ];
+
+        // DOM Elements
+        const secondsEl = document.getElementById('seconds-display');
+        const formattedEl = document.getElementById('time-formatted-display');
+        const spcEl = document.getElementById('spc-display');
+        const spsEl = document.getElementById('sps-display');
+        const clicksEl = document.getElementById('clicks-display');
+        const universesEl = document.getElementById('universes-display');
+        const clickBtn = document.getElementById('click-btn');
+        const upgradeListEl = document.getElementById('upgrade-list');
+        const cosmicUpgradeListEl = document.getElementById('cosmic-upgrade-list');
+        const achievementsGridEl = document.getElementById('achievements-grid');
+        const achievementCountEl = document.getElementById('achievement-count');
+        const universifyBtn = document.getElementById('universify-btn');
+        const universifyGainEl = document.getElementById('universify-gain-display');
+        const universifyProgressEl = document.getElementById('universify-progress');
+        const toastContainer = document.getElementById('toast-container');
+
+        // Calculate Universes Gained on Reset
+        function getPendingUniverses() {
+            if (game.seconds < UNIVERSIFY_REQ) return 0;
+            return Math.floor(Math.sqrt(game.seconds / UNIVERSIFY_REQ));
+        }
+
+        // Global Multipliers
         function getGlobalMultiplier() {
             let mult = 1.0;
             
-            // Overclock upgrade (1.5x per level)
+            // Standard Overclock
             mult *= Math.pow(1.5, game.upgrades.overclock.count);
 
-            // Synergy upgrade (+2% per upgrade owned)
+            // Synergy upgrade
             if (game.upgrades.synergy.count > 0) {
                 mult *= (1 + (game.upgradesBought * 0.02 * game.upgrades.synergy.count));
             }
 
-            // Paradox loop (2x per level)
-            mult *= Math.pow(2, game.upgrades.paradox.count);
+            // Dimensional Folding (3x per count)
+            mult *= Math.pow(3, game.upgrades.dimFolding.count);
+
+            // Universe Base Boost (+100% per Universe, enhanced by Big Bang Ignition upgrade)
+            const uniBoostPerUnit = 1 + (game.cosmicUpgrades.bigBang.count * 1.0);
+            mult *= (1 + (game.universes * uniBoostPerUnit));
 
             return mult;
         }
@@ -630,11 +772,13 @@
 
             let mult = getGlobalMultiplier();
 
-            // Chronos Formula boost
+            // Chronos Boost
             if (game.upgrades.chronos.count > 0) {
-                const chronosBoost = 1 + (Math.sqrt(game.maxSeconds) * 0.001 * game.upgrades.chronos.count);
-                mult *= chronosBoost;
+                mult *= (1 + (Math.sqrt(game.maxSeconds) * 0.001 * game.upgrades.chronos.count));
             }
+
+            // Dark Matter Engine
+            mult *= Math.pow(5, game.cosmicUpgrades.darkMatter.count);
 
             return baseSPS * mult;
         }
@@ -649,11 +793,13 @@
 
             let mult = getGlobalMultiplier();
 
-            // Kinetic Momentum boost
+            // Kinetic Momentum
             if (game.upgrades.kinetic.count > 0) {
-                const kineticBoost = 1 + (Math.log10(game.totalClicks + 1) * 0.5 * game.upgrades.kinetic.count);
-                mult *= kineticBoost;
+                mult *= (1 + (Math.log10(game.totalClicks + 1) * 0.5 * game.upgrades.kinetic.count));
             }
+
+            // Singularity Tap
+            mult *= Math.pow(10, game.cosmicUpgrades.singularityTap.count);
 
             return basePower * mult;
         }
@@ -730,7 +876,7 @@
             achievementCountEl.textContent = `${unlockedTotal} / ${ACHIEVEMENTS.length}`;
         }
 
-        // Render Upgrades UI
+        // Render Upgrade UI
         function createUpgradeUI() {
             upgradeListEl.innerHTML = '';
             for (let id in game.upgrades) {
@@ -760,30 +906,33 @@
                 upgradeListEl.appendChild(item);
                 document.getElementById(`btn-${id}`).addEventListener('click', () => buyUpgrade(id));
             }
-        }
 
-        // Update UI Loop
-        function updateUI() {
-            secondsEl.textContent = `${formatNumber(game.seconds)}s`;
-            formattedEl.textContent = formatTimeReadable(game.seconds);
-            spcEl.textContent = `+${formatNumber(getClickPower())}s`;
-            spsEl.textContent = `${formatNumber(getSPS())}s/sec`;
-            clicksEl.textContent = formatNumber(game.totalClicks);
+            // Cosmic Upgrades
+            cosmicUpgradeListEl.innerHTML = '';
+            for (let id in game.cosmicUpgrades) {
+                const upg = game.cosmicUpgrades[id];
 
-            // Update upgrade buttons
-            for (let id in game.upgrades) {
-                const upg = game.upgrades[id];
-                const btn = document.getElementById(`btn-${id}`);
-                if (btn) {
-                    btn.disabled = game.seconds < upg.cost;
-                    btn.innerHTML = `${formatNumber(upg.cost)}s`;
-                    const nameEl = btn.parentElement.querySelector('.upgrade-name');
-                    nameEl.childNodes[0].textContent = `${upg.name} (${upg.count}) `;
-                }
+                const item = document.createElement('div');
+                item.className = 'upgrade-item';
+                item.innerHTML = `
+                    <div class="upgrade-info">
+                        <span class="upgrade-name">
+                            ${upg.name} (${upg.count})
+                            <span class="badge badge-cosmic">COSMIC</span>
+                        </span>
+                        <span class="upgrade-desc">${upg.desc}</span>
+                    </div>
+                    <button class="upgrade-btn cosmic-btn" id="cosmic-btn-${id}">
+                        ${upg.cost} 🌌
+                    </button>
+                `;
+
+                cosmicUpgradeListEl.appendChild(item);
+                document.getElementById(`cosmic-btn-${id}`).addEventListener('click', () => buyCosmicUpgrade(id));
             }
         }
 
-        // Buy Upgrade Logic
+        // Buy Standard Upgrade
         function buyUpgrade(id) {
             const upg = game.upgrades[id];
             if (game.seconds >= upg.cost) {
@@ -796,6 +945,49 @@
             }
         }
 
+        // Buy Cosmic Upgrade
+        function buyCosmicUpgrade(id) {
+            const upg = game.cosmicUpgrades[id];
+            if (game.universes >= upg.cost) {
+                game.universes -= upg.cost;
+                upg.count++;
+                upg.cost = Math.floor(upg.cost * 2);
+                checkAchievements();
+                updateUI();
+            }
+        }
+
+        // Universify Reset Action
+        function universifyReset() {
+            const pending = getPendingUniverses();
+            if (pending < 1) return;
+
+            if (confirm(`Collapse the universe for +${pending} Universes? This resets your seconds and normal upgrades!`)) {
+                game.universes += pending;
+                game.universifyCount++;
+                game.seconds = 0;
+                game.upgradesBought = 0;
+
+                // Reset standard upgrades
+                const baseCosts = {
+                    watch: 15, gear: 100, pointer: 800, glove: 5000, dilationTap: 50000, tachyonBeam: 500000, bigRipClicker: 1e9,
+                    hourglass: 20, grandfather: 150, atomic: 1200, timemachine: 10000, wormhole: 100000, singularity: 1000000, multiverseGen: 5e8,
+                    overclock: 500, kinetic: 2500, synergy: 15000, chronos: 75000, dimFolding: 1e10
+                };
+
+                for (let id in game.upgrades) {
+                    game.upgrades[id].count = 0;
+                    game.upgrades[id].cost = baseCosts[id] || game.upgrades[id].cost;
+                }
+
+                checkAchievements();
+                saveGame();
+                updateUI();
+            }
+        }
+
+        universifyBtn.addEventListener('click', universifyReset);
+
         // Click Action
         clickBtn.addEventListener('click', (e) => {
             const addedSeconds = getClickPower();
@@ -803,7 +995,6 @@
             game.maxSeconds += addedSeconds;
             game.totalClicks++;
 
-            // Spawn floating text
             const text = document.createElement('div');
             text.className = 'floating-text';
             text.textContent = `+${formatNumber(addedSeconds)}s`;
@@ -822,6 +1013,55 @@
             updateUI();
         });
 
+        // Update UI Loop
+        function updateUI() {
+            secondsEl.textContent = `${formatNumber(game.seconds)}s`;
+            formattedEl.textContent = formatTimeReadable(game.seconds);
+            spcEl.textContent = `+${formatNumber(getClickPower())}s`;
+            spsEl.textContent = `${formatNumber(getSPS())}s/sec`;
+            clicksEl.textContent = formatNumber(game.totalClicks);
+            universesEl.textContent = formatNumber(game.universes);
+
+            // Progress towards Universify
+            const progress = Math.min(100, (game.seconds / UNIVERSIFY_REQ) * 100);
+            universifyProgressEl.style.width = `${progress}%`;
+
+            const pending = getPendingUniverses();
+            universifyGainEl.textContent = `+${pending} Universes`;
+
+            if (game.seconds >= UNIVERSIFY_REQ) {
+                universifyBtn.disabled = false;
+                universifyBtn.textContent = `🌌 UNIVERSIFY (+${pending} Universes)`;
+            } else {
+                universifyBtn.disabled = true;
+                universifyBtn.textContent = `🌌 UNIVERSIFY (${progress.toFixed(1)}%)`;
+            }
+
+            // Standard Upgrades
+            for (let id in game.upgrades) {
+                const upg = game.upgrades[id];
+                const btn = document.getElementById(`btn-${id}`);
+                if (btn) {
+                    btn.disabled = game.seconds < upg.cost;
+                    btn.innerHTML = `${formatNumber(upg.cost)}s`;
+                    const nameEl = btn.parentElement.querySelector('.upgrade-name');
+                    nameEl.childNodes[0].textContent = `${upg.name} (${upg.count}) `;
+                }
+            }
+
+            // Cosmic Upgrades
+            for (let id in game.cosmicUpgrades) {
+                const upg = game.cosmicUpgrades[id];
+                const btn = document.getElementById(`cosmic-btn-${id}`);
+                if (btn) {
+                    btn.disabled = game.universes < upg.cost;
+                    btn.innerHTML = `${upg.cost} 🌌`;
+                    const nameEl = btn.parentElement.querySelector('.upgrade-name');
+                    nameEl.childNodes[0].textContent = `${upg.name} (${upg.count}) `;
+                }
+            }
+        }
+
         // Loop
         function gameLoop() {
             const now = Date.now();
@@ -836,7 +1076,7 @@
             updateUI();
         }
 
-        // DevTools F12 Secret Detection
+        // F12 Detector
         window.addEventListener('keydown', (e) => {
             if (e.key === 'F12' || 
                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
@@ -865,6 +1105,8 @@
                 game.maxSeconds = loaded.maxSeconds || game.seconds;
                 game.totalClicks = loaded.totalClicks || 0;
                 game.upgradesBought = loaded.upgradesBought || 0;
+                game.universes = loaded.universes || 0;
+                game.universifyCount = loaded.universifyCount || 0;
                 game.lastTick = Date.now();
                 game.unlockedAchievements = loaded.unlockedAchievements || {};
 
@@ -876,11 +1118,20 @@
                         }
                     }
                 }
+
+                if (loaded.cosmicUpgrades) {
+                    for (let id in loaded.cosmicUpgrades) {
+                        if (game.cosmicUpgrades[id]) {
+                            game.cosmicUpgrades[id].count = loaded.cosmicUpgrades[id].count || 0;
+                            game.cosmicUpgrades[id].cost = loaded.cosmicUpgrades[id].cost || game.cosmicUpgrades[id].cost;
+                        }
+                    }
+                }
             }
         }
 
         function resetGame() {
-            if (confirm("Are you sure you want to reset all progress and achievements?")) {
+            if (confirm("Are you sure you want to reset all progress, Universes, and achievements?")) {
                 localStorage.removeItem('timeClickerSave');
                 location.reload();
             }
