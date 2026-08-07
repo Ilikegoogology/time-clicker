@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Clicker - Fixed Googology Engine</title>
+    <title>Time Clicker - Console Edit Fixed</title>
     <style>
         :root {
             --bg-color: #060911;
@@ -584,7 +584,7 @@
 
     <script>
         // -------------------------------------------------------------
-        // Custom Robust BigNum Engine (Mantissa + Exponent)
+        // Custom Robust BigNum Engine
         // -------------------------------------------------------------
         class BigNum {
             constructor(m, e) {
@@ -604,10 +604,22 @@
                         this.e = eVal;
                     }
                 } else if (typeof m === 'string') {
-                    let parsed = parseFloat(m);
-                    let b = new BigNum(parsed);
-                    this.m = b.m;
-                    this.e = b.e;
+                    let parts = m.toLowerCase().split('e');
+                    if (parts.length === 2) {
+                        let mantissa = parseFloat(parts[0]);
+                        let exp = parseFloat(parts[1]);
+                        if (!isNaN(mantissa) && !isNaN(exp)) {
+                            this.m = mantissa;
+                            this.e = exp;
+                        } else {
+                            this.m = 0; this.e = 0;
+                        }
+                    } else {
+                        let parsed = parseFloat(m);
+                        let b = new BigNum(parsed);
+                        this.m = b.m;
+                        this.e = b.e;
+                    }
                 } else {
                     this.m = 0;
                     this.e = 0;
@@ -631,7 +643,23 @@
 
             static from(val) {
                 if (val instanceof BigNum) return val;
-                return new BigNum(val);
+                if (typeof val === 'string') {
+                    let parts = val.toLowerCase().split('e');
+                    if (parts.length === 2) {
+                        let mantissa = parseFloat(parts[0]);
+                        let exp = parseFloat(parts[1]);
+                        if (!isNaN(mantissa) && !isNaN(exp)) {
+                            return new BigNum(mantissa, exp);
+                        }
+                    }
+                    let parsed = parseFloat(val);
+                    if (!isNaN(parsed)) return new BigNum(parsed);
+                }
+                if (typeof val === 'number') {
+                    if (!isFinite(val) && val > 0) return new BigNum(1, 308);
+                    return new BigNum(val);
+                }
+                return new BigNum(0);
             }
 
             add(other) {
@@ -772,6 +800,7 @@
         }
 
         function formatTimeReadable(totalSeconds) {
+            totalSeconds = BigNum.from(totalSeconds);
             let s = Math.floor(totalSeconds.toNumber());
             if (!isFinite(s) || totalSeconds.gte(new BigNum(1, 12))) {
                 return `${formatNumber(totalSeconds)} seconds`;
@@ -903,6 +932,13 @@
         const universifyGainEl = document.getElementById('universify-gain-display');
         const universifyProgressEl = document.getElementById('universify-progress');
         const toastContainer = document.getElementById('toast-container');
+
+        // Ensure state variables stay BigNum instances (fixes console editing)
+        function sanitizeState() {
+            game.seconds = BigNum.from(game.seconds);
+            game.maxSeconds = BigNum.from(game.maxSeconds);
+            game.universes = BigNum.from(game.universes);
+        }
 
         // Calculate Pending Universes
         function getPendingUniverses() {
@@ -1101,6 +1137,7 @@
 
         // Buy Standard Upgrade
         function buyUpgrade(id) {
+            sanitizeState();
             const upg = game.upgrades[id];
             if (game.seconds.gte(upg.cost)) {
                 game.seconds = game.seconds.sub(upg.cost);
@@ -1114,6 +1151,7 @@
 
         // Buy Cosmic Upgrade
         function buyCosmicUpgrade(id) {
+            sanitizeState();
             const upg = game.cosmicUpgrades[id];
             if (game.universes.gte(upg.cost)) {
                 game.universes = game.universes.sub(upg.cost);
@@ -1126,6 +1164,7 @@
 
         // Universify Reset
         function universifyReset() {
+            sanitizeState();
             const pending = getPendingUniverses();
             if (pending.lt(1)) return;
 
@@ -1157,6 +1196,7 @@
 
         // Click Action
         clickBtn.addEventListener('click', (e) => {
+            sanitizeState();
             const addedSeconds = getClickPower();
             game.seconds = game.seconds.add(addedSeconds);
             game.maxSeconds = game.maxSeconds.add(addedSeconds);
@@ -1182,6 +1222,7 @@
 
         // Update UI Loop
         function updateUI() {
+            sanitizeState();
             secondsEl.textContent = `${formatNumber(game.seconds)}s`;
             formattedEl.textContent = formatTimeReadable(game.seconds);
             spcEl.textContent = `+${formatNumber(getClickPower())}s`;
@@ -1194,9 +1235,10 @@
             if (game.seconds.gte(UNIVERSIFY_REQ)) {
                 progress = 100;
             } else {
-                progress = Math.min(100, (game.seconds.toNumber() / UNIVERSIFY_REQ.toNumber()) * 100);
+                let ratio = game.seconds.div(UNIVERSIFY_REQ).toNumber();
+                progress = Math.min(100, Math.max(0, ratio * 100));
             }
-            universifyProgressEl.style.width = `${progress}%`;
+            universifyProgressEl.style.width = `${progress.toFixed(2)}%`;
 
             const pending = getPendingUniverses();
             universifyGainEl.textContent = `+${formatNumber(pending)} Universes`;
@@ -1234,8 +1276,9 @@
             }
         }
 
-        // Loop
+        // Game Loop
         function gameLoop() {
+            sanitizeState();
             const now = Date.now();
             const delta = (now - game.lastTick) / 1000;
             game.lastTick = now;
@@ -1263,11 +1306,40 @@
         });
         setInterval(() => { console.log('%c', element); }, 2000);
 
+        // -------------------------------------------------------------
+        // Developer Console Cheat Helpers
+        // -------------------------------------------------------------
+        window.setSeconds = function(val) {
+            game.seconds = BigNum.from(val);
+            game.maxSeconds = BigNum.from(val);
+            updateUI();
+            console.log("Seconds set to:", formatNumber(game.seconds));
+        };
+
+        window.addSeconds = function(val) {
+            let addVal = BigNum.from(val);
+            game.seconds = game.seconds.add(addVal);
+            game.maxSeconds = game.maxSeconds.add(addVal);
+            updateUI();
+            console.log("Added seconds. Total:", formatNumber(game.seconds));
+        };
+
+        window.setUniverses = function(val) {
+            game.universes = BigNum.from(val);
+            updateUI();
+            console.log("Universes set to:", formatNumber(game.universes));
+        };
+
+        window.unlockAllAchievements = function() {
+            ACHIEVEMENTS.forEach(ach => unlockAchievement(ach.id));
+            console.log("All achievements unlocked!");
+        };
+
         // Safe Save & Load
         function parseBigNum(obj) {
             if (!obj) return new BigNum(0);
             if (obj instanceof BigNum) return obj;
-            if (typeof obj === 'number') return new BigNum(obj);
+            if (typeof obj === 'number' || typeof obj === 'string') return BigNum.from(obj);
             if (typeof obj === 'object') {
                 let m = typeof obj.m === 'number' ? obj.m : 0;
                 let e = typeof obj.e === 'number' ? obj.e : 0;
@@ -1318,7 +1390,7 @@
                     }
                 }
             } catch (err) {
-                console.error("Recovered from broken save state:", err);
+                console.error("Recovered from save error:", err);
                 game.seconds = new BigNum(0);
                 game.maxSeconds = new BigNum(0);
             }
@@ -1345,6 +1417,13 @@
         createUpgradeUI();
         renderAchievements();
         setInterval(gameLoop, 100);
+
+        console.log("%c⏳ TIME CLICKER DEV CONSOLE READY!", "color: #00f0ff; font-weight: bold; font-size: 14px;");
+        console.log("Console cheats available:");
+        console.log(" • setSeconds('1e300') or game.seconds = 3e300");
+        console.log(" • addSeconds('1e100')");
+        console.log(" • setUniverses(100)");
+        console.log(" • unlockAllAchievements()");
     </script>
 </body>
 </html>
