@@ -10,6 +10,7 @@
             --card-bg: #161f30;
             --accent-color: #00f0ff;
             --accent-hover: #00b8cc;
+            --gold-color: #ffd700;
             --text-color: #e2e8f0;
             --subtext-color: #94a3b8;
             --disabled-color: #334155;
@@ -49,12 +50,15 @@
             grid-template-columns: 1fr;
             gap: 20px;
             width: 100%;
-            max-width: 900px;
+            max-width: 950px;
         }
 
         @media (min-width: 768px) {
             .container {
                 grid-template-columns: 1fr 1fr;
+            }
+            .full-width {
+                grid-column: span 2;
             }
         }
 
@@ -152,13 +156,16 @@
             100% { opacity: 0; transform: translateY(-50px); }
         }
 
-        /* Upgrades List */
-        .upgrades-title {
-            font-size: 1.5rem;
+        /* Upgrades & Achievements Titles */
+        .panel-title {
+            font-size: 1.4rem;
             margin-bottom: 15px;
             width: 100%;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .upgrade-list {
@@ -166,7 +173,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            max-height: 500px;
+            max-height: 480px;
             overflow-y: auto;
             padding-right: 5px;
         }
@@ -214,6 +221,91 @@
             background-color: var(--disabled-color);
             color: #64748b;
             cursor: not-allowed;
+        }
+
+        /* Achievements Styling */
+        .achievements-grid {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 12px;
+        }
+
+        .achievement-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            opacity: 0.5;
+            transition: all 0.3s;
+        }
+
+        .achievement-card.unlocked {
+            opacity: 1;
+            border-color: rgba(255, 215, 0, 0.3);
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        .achievement-icon {
+            font-size: 2rem;
+        }
+
+        .achievement-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .achievement-title {
+            font-weight: bold;
+            font-size: 0.95rem;
+            color: var(--text-color);
+        }
+
+        .achievement-card.unlocked .achievement-title {
+            color: var(--gold-color);
+        }
+
+        .achievement-desc {
+            font-size: 0.8rem;
+            color: var(--subtext-color);
+        }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: #1e293b;
+            border: 2px solid var(--gold-color);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.4s ease, fadeOut 0.5s ease 3.5s forwards;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; transform: translateY(-10px); }
         }
 
         /* Controls */
@@ -269,9 +361,22 @@
 
         <!-- Upgrades Panel -->
         <div class="card">
-            <div class="upgrades-title">Temporal Upgrades</div>
+            <div class="panel-title">
+                <span>Temporal Upgrades</span>
+            </div>
             <div class="upgrade-list" id="upgrade-list">
                 <!-- Upgrades generated dynamically -->
+            </div>
+        </div>
+
+        <!-- Achievements Panel -->
+        <div class="card full-width">
+            <div class="panel-title">
+                <span>🏆 Achievements</span>
+                <span id="achievement-count" style="font-size: 0.9rem; color: var(--subtext-color);">0 / 5</span>
+            </div>
+            <div class="achievements-grid" id="achievements-grid">
+                <!-- Achievements generated dynamically -->
             </div>
         </div>
     </div>
@@ -281,11 +386,14 @@
         <button class="control-btn" id="reset-btn">Hard Reset</button>
     </div>
 
+    <!-- Container for notification toasts -->
+    <div id="toast-container"></div>
+
     <script>
         // Game State
         let game = {
             seconds: 0,
-            clickPower: 1,
+            maxSeconds: 0, // Tracks total lifetime accumulated time
             lastTick: Date.now(),
             upgrades: {
                 watch: { name: "Digital Watch", cost: 15, power: 1, type: "click", count: 0, desc: "+1s per click" },
@@ -295,8 +403,49 @@
                 atomic: { name: "Atomic Clock", cost: 1200, power: 45, type: "passive", count: 0, desc: "+45s per sec" },
                 timemachine: { name: "Time Machine", cost: 10000, power: 400, type: "passive", count: 0, desc: "+400s per sec" },
                 wormhole: { name: "Temporal Wormhole", cost: 100000, power: 5000, type: "passive", count: 0, desc: "+5,000s per sec" }
-            }
+            },
+            unlockedAchievements: {}
         };
+
+        // Achievement Definitions
+        const ACHIEVEMENTS = [
+            {
+                id: "ticking_time",
+                name: "Ticking Time",
+                desc: "Accumulate 1 second of time.",
+                icon: "⏱️",
+                req: () => game.maxSeconds >= 1
+            },
+            {
+                id: "wait_a_minute",
+                name: "Wait a Minute",
+                desc: "Reach 1 minute (60 seconds) of accumulated time.",
+                icon: "⌛",
+                req: () => game.maxSeconds >= 60
+            },
+            {
+                id: "zzz",
+                name: "ZZZ",
+                desc: "Reach 12 hours (43,200 seconds) of accumulated time.",
+                icon: "😴",
+                req: () => game.maxSeconds >= 43200
+            },
+            {
+                id: "age",
+                name: "Age",
+                desc: "Reach 1 year (31,536,000 seconds) of accumulated time.",
+                icon: "🏛️",
+                req: () => game.maxSeconds >= 31536000
+            },
+            {
+                id: "f12_secret",
+                name: "Hey! What are you doing!",
+                desc: "Opened the Developer Console using F12 / DevTools.",
+                icon: "💻",
+                secret: true,
+                req: () => false // Triggered specifically via Console/F12 event listener
+            }
+        ];
 
         // DOM Elements
         const secondsEl = document.getElementById('seconds-display');
@@ -305,6 +454,9 @@
         const spsEl = document.getElementById('sps-display');
         const clickBtn = document.getElementById('click-btn');
         const upgradeListEl = document.getElementById('upgrade-list');
+        const achievementsGridEl = document.getElementById('achievements-grid');
+        const achievementCountEl = document.getElementById('achievement-count');
+        const toastContainer = document.getElementById('toast-container');
 
         // Helpers
         function formatNumber(num) {
@@ -329,7 +481,7 @@
             if (minutes > 0 || hours > 0 || days > 0 || years > 0) parts.push(`${minutes}m`);
             parts.push(`${seconds}s`);
 
-            return parts.slice(0, 3).join(' '); // Show top 3 largest units
+            return parts.slice(0, 3).join(' ');
         }
 
         function getSPS() {
@@ -352,7 +504,74 @@
             return power;
         }
 
-        // Render Upgrade UI
+        // Achievements Logic
+        function checkAchievements() {
+            ACHIEVEMENTS.forEach(ach => {
+                if (!game.unlockedAchievements[ach.id] && ach.req()) {
+                    unlockAchievement(ach.id);
+                }
+            });
+        }
+
+        function unlockAchievement(id) {
+            if (game.unlockedAchievements[id]) return;
+
+            const ach = ACHIEVEMENTS.find(a => a.id === id);
+            if (!ach) return;
+
+            game.unlockedAchievements[id] = true;
+            showToast(ach);
+            renderAchievements();
+            saveGame();
+        }
+
+        function showToast(ach) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <div style="font-size: 1.8rem;">${ach.icon}</div>
+                <div>
+                    <div style="font-size:0.75rem; color: var(--gold-color); font-weight: bold; text-transform: uppercase;">Achievement Unlocked!</div>
+                    <div style="font-weight: bold;">${ach.name}</div>
+                </div>
+            `;
+            toastContainer.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 4000);
+        }
+
+        function renderAchievements() {
+            achievementsGridEl.innerHTML = '';
+            let unlockedTotal = 0;
+
+            ACHIEVEMENTS.forEach(ach => {
+                const isUnlocked = !!game.unlockedAchievements[ach.id];
+                if (isUnlocked) unlockedTotal++;
+
+                const card = document.createElement('div');
+                card.className = `achievement-card ${isUnlocked ? 'unlocked' : ''}`;
+                
+                const titleText = (ach.secret && !isUnlocked) ? '???' : ach.name;
+                const descText = (ach.secret && !isUnlocked) ? 'Secret achievement. Figure out how to unlock it!' : ach.desc;
+                const iconText = isUnlocked ? ach.icon : '🔒';
+
+                card.innerHTML = `
+                    <div class="achievement-icon">${iconText}</div>
+                    <div class="achievement-details">
+                        <span class="achievement-title">${titleText}</span>
+                        <span class="achievement-desc">${descText}</span>
+                    </div>
+                `;
+
+                achievementsGridEl.appendChild(card);
+            });
+
+            achievementCountEl.textContent = `${unlockedTotal} / ${ACHIEVEMENTS.length}`;
+        }
+
+        // Render Upgrades UI
         function createUpgradeUI() {
             upgradeListEl.innerHTML = '';
             for (let id in game.upgrades) {
@@ -371,7 +590,6 @@
                 `;
 
                 upgradeListEl.appendChild(item);
-
                 document.getElementById(`btn-${id}`).addEventListener('click', () => buyUpgrade(id));
             }
         }
@@ -402,15 +620,16 @@
             if (game.seconds >= upg.cost) {
                 game.seconds -= upg.cost;
                 upg.count++;
-                upg.cost = Math.floor(upg.cost * 1.15); // Cost scaling
+                upg.cost = Math.floor(upg.cost * 1.15);
                 updateUI();
             }
         }
 
-        // Click Action & Animation
+        // Click Action
         clickBtn.addEventListener('click', (e) => {
             const addedSeconds = getClickPower();
             game.seconds += addedSeconds;
+            game.maxSeconds += addedSeconds;
 
             // Spawn floating text
             const text = document.createElement('div');
@@ -428,19 +647,43 @@
 
             setTimeout(() => text.remove(), 800);
 
+            checkAchievements();
             updateUI();
         });
 
-        // Game Loop (Delta time based)
+        // Loop
         function gameLoop() {
             const now = Date.now();
             const delta = (now - game.lastTick) / 1000;
             game.lastTick = now;
 
-            game.seconds += getSPS() * delta;
+            const gained = getSPS() * delta;
+            game.seconds += gained;
+            game.maxSeconds += gained;
 
+            checkAchievements();
             updateUI();
         }
+
+        // Detect Console / F12 Opening (Secret Achievement)
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'F12' || 
+               (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
+               (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'i'))) {
+                unlockAchievement('f12_secret');
+            }
+        });
+
+        // Console inspection detector
+        const element = new Image();
+        Object.defineProperty(element, 'id', {
+            get: function () {
+                unlockAchievement('f12_secret');
+            }
+        });
+        setInterval(() => {
+            console.log('%c', element);
+        }, 2000);
 
         // Save & Load
         function saveGame() {
@@ -452,9 +695,10 @@
             if (saved) {
                 const loaded = JSON.parse(saved);
                 
-                // Merge data nicely to handle updates gracefully
                 game.seconds = loaded.seconds || 0;
+                game.maxSeconds = loaded.maxSeconds || game.seconds;
                 game.lastTick = Date.now();
+                game.unlockedAchievements = loaded.unlockedAchievements || {};
 
                 if (loaded.upgrades) {
                     for (let id in loaded.upgrades) {
@@ -468,13 +712,12 @@
         }
 
         function resetGame() {
-            if (confirm("Are you sure you want to reset all your progress?")) {
+            if (confirm("Are you sure you want to reset all progress and achievements?")) {
                 localStorage.removeItem('timeClickerSave');
                 location.reload();
             }
         }
 
-        // Event Listeners for Controls
         document.getElementById('save-btn').addEventListener('click', () => {
             saveGame();
             alert("Game saved!");
@@ -488,6 +731,7 @@
         // Init
         loadGame();
         createUpgradeUI();
+        renderAchievements();
         setInterval(gameLoop, 100);
     </script>
 </body>
