@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Clicker</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #161f30;
+            --accent-color: #00f0ff;
+            --accent-hover: #00b8cc;
+            --text-color: #e2e8f0;
+            --subtext-color: #94a3b8;
+            --disabled-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Display Panel */
+        .time-display {
+            text-align: center;
+            width: 100%;
+        }
+
+        .seconds-total {
+            font-size: 2.8rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin: 10px 0;
+        }
+
+        .time-formatted {
+            font-size: 1.1rem;
+            color: var(--subtext-color);
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.2);
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .stat-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        /* Click Button */
+        .click-area {
+            position: relative;
+            margin: 30px 0;
+        }
+
+        .click-btn {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            border: 4px solid var(--accent-color);
+            background: radial-gradient(circle, #1a2942 0%, #0f172a 100%);
+            color: var(--accent-color);
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+            transition: transform 0.1s, box-shadow 0.1s;
+            outline: none;
+        }
+
+        .click-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.6);
+        }
+
+        /* Floating Text Effect */
+        .floating-text {
+            position: absolute;
+            color: var(--accent-color);
+            font-weight: bold;
+            font-size: 1.2rem;
+            pointer-events: none;
+            animation: floatUp 0.8s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-50px); }
+        }
+
+        /* Upgrades List */
+        .upgrades-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            width: 100%;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 8px;
+        }
+
+        .upgrade-list {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .upgrade-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .upgrade-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .upgrade-name {
+            font-weight: bold;
+        }
+
+        .upgrade-desc {
+            font-size: 0.8rem;
+            color: var(--subtext-color);
+        }
+
+        .upgrade-btn {
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .upgrade-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .upgrade-btn:disabled {
+            background-color: var(--disabled-color);
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background: transparent;
+            border: 1px solid var(--subtext-color);
+            color: var(--subtext-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .control-btn:hover {
+            color: var(--text-color);
+            border-color: var(--text-color);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>⏳ TIME CLICKER</h1>
+    </header>
+
+    <div class="container">
+        <!-- Clicker & Counter Panel -->
+        <div class="card time-display">
+            <div class="seconds-total" id="seconds-display">0s</div>
+            <div class="time-formatted" id="time-formatted-display">0m 0s</div>
+
+            <div class="click-area">
+                <button class="click-btn" id="click-btn">TICK TIME</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div>Per Click</div>
+                    <div class="stat-value" id="spc-display">+1s</div>
+                </div>
+                <div class="stat-box">
+                    <div>Per Second</div>
+                    <div class="stat-value" id="sps-display">0s/sec</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upgrades Panel -->
+        <div class="card">
+            <div class="upgrades-title">Temporal Upgrades</div>
+            <div class="upgrade-list" id="upgrade-list">
+                <!-- Upgrades generated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn" id="save-btn">Save Game</button>
+        <button class="control-btn" id="reset-btn">Hard Reset</button>
+    </div>
+
+    <script>
+        // Game State
+        let game = {
+            seconds: 0,
+            clickPower: 1,
+            lastTick: Date.now(),
+            upgrades: {
+                watch: { name: "Digital Watch", cost: 15, power: 1, type: "click", count: 0, desc: "+1s per click" },
+                gear: { name: "Clockwork Gears", cost: 100, power: 5, type: "click", count: 0, desc: "+5s per click" },
+                hourglass: { name: "Hourglass", cost: 20, power: 1, type: "passive", count: 0, desc: "+1s per sec" },
+                grandfather: { name: "Grandfather Clock", cost: 150, power: 5, type: "passive", count: 0, desc: "+5s per sec" },
+                atomic: { name: "Atomic Clock", cost: 1200, power: 45, type: "passive", count: 0, desc: "+45s per sec" },
+                timemachine: { name: "Time Machine", cost: 10000, power: 400, type: "passive", count: 0, desc: "+400s per sec" },
+                wormhole: { name: "Temporal Wormhole", cost: 100000, power: 5000, type: "passive", count: 0, desc: "+5,000s per sec" }
+            }
+        };
+
+        // DOM Elements
+        const secondsEl = document.getElementById('seconds-display');
+        const formattedEl = document.getElementById('time-formatted-display');
+        const spcEl = document.getElementById('spc-display');
+        const spsEl = document.getElementById('sps-display');
+        const clickBtn = document.getElementById('click-btn');
+        const upgradeListEl = document.getElementById('upgrade-list');
+
+        // Helpers
+        function formatNumber(num) {
+            return Math.floor(num).toLocaleString();
+        }
+
+        function formatTimeReadable(totalSeconds) {
+            let s = Math.floor(totalSeconds);
+            const years = Math.floor(s / (365 * 24 * 3600));
+            s %= (365 * 24 * 3600);
+            const days = Math.floor(s / (24 * 3600));
+            s %= (24 * 3600);
+            const hours = Math.floor(s / 3600);
+            s %= 3600;
+            const minutes = Math.floor(s / 60);
+            const seconds = s % 60;
+
+            let parts = [];
+            if (years > 0) parts.push(`${years}y`);
+            if (days > 0) parts.push(`${days}d`);
+            if (hours > 0) parts.push(`${hours}h`);
+            if (minutes > 0 || hours > 0 || days > 0 || years > 0) parts.push(`${minutes}m`);
+            parts.push(`${seconds}s`);
+
+            return parts.slice(0, 3).join(' '); // Show top 3 largest units
+        }
+
+        function getSPS() {
+            let sps = 0;
+            for (let id in game.upgrades) {
+                if (game.upgrades[id].type === "passive") {
+                    sps += game.upgrades[id].count * game.upgrades[id].power;
+                }
+            }
+            return sps;
+        }
+
+        function getClickPower() {
+            let power = 1;
+            for (let id in game.upgrades) {
+                if (game.upgrades[id].type === "click") {
+                    power += game.upgrades[id].count * game.upgrades[id].power;
+                }
+            }
+            return power;
+        }
+
+        // Render Upgrade UI
+        function createUpgradeUI() {
+            upgradeListEl.innerHTML = '';
+            for (let id in game.upgrades) {
+                const upg = game.upgrades[id];
+
+                const item = document.createElement('div');
+                item.className = 'upgrade-item';
+                item.innerHTML = `
+                    <div class="upgrade-info">
+                        <span class="upgrade-name">${upg.name} (${upg.count})</span>
+                        <span class="upgrade-desc">${upg.desc}</span>
+                    </div>
+                    <button class="upgrade-btn" id="btn-${id}">
+                        ${formatNumber(upg.cost)}s
+                    </button>
+                `;
+
+                upgradeListEl.appendChild(item);
+
+                document.getElementById(`btn-${id}`).addEventListener('click', () => buyUpgrade(id));
+            }
+        }
+
+        // Update UI Loop
+        function updateUI() {
+            secondsEl.textContent = `${formatNumber(game.seconds)}s`;
+            formattedEl.textContent = formatTimeReadable(game.seconds);
+            spcEl.textContent = `+${formatNumber(getClickPower())}s`;
+            spsEl.textContent = `${formatNumber(getSPS())}s/sec`;
+
+            // Update buttons
+            for (let id in game.upgrades) {
+                const upg = game.upgrades[id];
+                const btn = document.getElementById(`btn-${id}`);
+                if (btn) {
+                    btn.disabled = game.seconds < upg.cost;
+                    btn.innerHTML = `${formatNumber(upg.cost)}s`;
+                    const nameEl = btn.parentElement.querySelector('.upgrade-name');
+                    nameEl.textContent = `${upg.name} (${upg.count})`;
+                }
+            }
+        }
+
+        // Buy Upgrade Logic
+        function buyUpgrade(id) {
+            const upg = game.upgrades[id];
+            if (game.seconds >= upg.cost) {
+                game.seconds -= upg.cost;
+                upg.count++;
+                upg.cost = Math.floor(upg.cost * 1.15); // Cost scaling
+                updateUI();
+            }
+        }
+
+        // Click Action & Animation
+        clickBtn.addEventListener('click', (e) => {
+            const addedSeconds = getClickPower();
+            game.seconds += addedSeconds;
+
+            // Spawn floating text
+            const text = document.createElement('div');
+            text.className = 'floating-text';
+            text.textContent = `+${formatNumber(addedSeconds)}s`;
+            
+            const rect = clickBtn.getBoundingClientRect();
+            const x = e.clientX - rect.left - 20;
+            const y = e.clientY - rect.top - 20;
+
+            text.style.left = `${x}px`;
+            text.style.top = `${y}px`;
+
+            clickBtn.parentElement.appendChild(text);
+
+            setTimeout(() => text.remove(), 800);
+
+            updateUI();
+        });
+
+        // Game Loop (Delta time based)
+        function gameLoop() {
+            const now = Date.now();
+            const delta = (now - game.lastTick) / 1000;
+            game.lastTick = now;
+
+            game.seconds += getSPS() * delta;
+
+            updateUI();
+        }
+
+        // Save & Load
+        function saveGame() {
+            localStorage.setItem('timeClickerSave', JSON.stringify(game));
+        }
+
+        function loadGame() {
+            const saved = localStorage.getItem('timeClickerSave');
+            if (saved) {
+                const loaded = JSON.parse(saved);
+                
+                // Merge data nicely to handle updates gracefully
+                game.seconds = loaded.seconds || 0;
+                game.lastTick = Date.now();
+
+                if (loaded.upgrades) {
+                    for (let id in loaded.upgrades) {
+                        if (game.upgrades[id]) {
+                            game.upgrades[id].count = loaded.upgrades[id].count || 0;
+                            game.upgrades[id].cost = loaded.upgrades[id].cost || game.upgrades[id].cost;
+                        }
+                    }
+                }
+            }
+        }
+
+        function resetGame() {
+            if (confirm("Are you sure you want to reset all your progress?")) {
+                localStorage.removeItem('timeClickerSave');
+                location.reload();
+            }
+        }
+
+        // Event Listeners for Controls
+        document.getElementById('save-btn').addEventListener('click', () => {
+            saveGame();
+            alert("Game saved!");
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', resetGame);
+
+        // Auto Save every 10 seconds
+        setInterval(saveGame, 10000);
+
+        // Init
+        loadGame();
+        createUpgradeUI();
+        setInterval(gameLoop, 100);
+    </script>
+</body>
+</html>
