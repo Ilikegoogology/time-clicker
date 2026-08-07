@@ -3,17 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Clicker</title>
+    <title>Time Clicker - Expanded</title>
     <style>
         :root {
-            --bg-color: #0b0f19;
-            --card-bg: #161f30;
+            --bg-color: #080c14;
+            --card-bg: #111827;
             --accent-color: #00f0ff;
             --accent-hover: #00b8cc;
             --gold-color: #ffd700;
-            --text-color: #e2e8f0;
+            --text-color: #f1f5f9;
             --subtext-color: #94a3b8;
-            --disabled-color: #334155;
+            --disabled-color: #1e293b;
+
+            /* Difficulty Colors */
+            --diff-easy: #22c55e;
+            --diff-medium: #3b82f6;
+            --diff-hard: #a855f7;
+            --diff-extreme: #ef4444;
+            --diff-insane: #ec4899;
+            --diff-wild: #f97316;
         }
 
         * {
@@ -42,7 +50,7 @@
         h1 {
             font-size: 2.5rem;
             color: var(--accent-color);
-            text-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+            text-shadow: 0 0 12px rgba(0, 240, 255, 0.5);
         }
 
         .container {
@@ -50,10 +58,10 @@
             grid-template-columns: 1fr;
             gap: 20px;
             width: 100%;
-            max-width: 950px;
+            max-width: 1050px;
         }
 
-        @media (min-width: 768px) {
+        @media (min-width: 850px) {
             .container {
                 grid-template-columns: 1fr 1fr;
             }
@@ -65,15 +73,15 @@
         .card {
             background-color: var(--card-bg);
             border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.07);
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* Display Panel */
+        /* Time Display Panel */
         .time-display {
             text-align: center;
             width: 100%;
@@ -87,61 +95,64 @@
         }
 
         .time-formatted {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             color: var(--subtext-color);
-            margin-bottom: 20px;
-            background: rgba(0,0,0,0.2);
+            margin-bottom: 15px;
+            background: rgba(0,0,0,0.3);
             padding: 8px 12px;
             border-radius: 6px;
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
             width: 100%;
-            margin-top: 15px;
+            margin-top: 10px;
             text-align: center;
+            font-size: 0.85rem;
         }
 
         .stat-box {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 10px;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 8px;
             border-radius: 8px;
         }
 
         .stat-value {
             font-weight: bold;
             color: var(--accent-color);
+            font-size: 0.95rem;
+            margin-top: 3px;
         }
 
         /* Click Button */
         .click-area {
             position: relative;
-            margin: 30px 0;
+            margin: 20px 0;
         }
 
         .click-btn {
-            width: 160px;
-            height: 160px;
+            width: 150px;
+            height: 150px;
             border-radius: 50%;
             border: 4px solid var(--accent-color);
-            background: radial-gradient(circle, #1a2942 0%, #0f172a 100%);
+            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
             color: var(--accent-color);
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.3);
             transition: transform 0.1s, box-shadow 0.1s;
             outline: none;
         }
 
         .click-btn:active {
-            transform: scale(0.95);
-            box-shadow: 0 0 30px rgba(0, 240, 255, 0.6);
+            transform: scale(0.94);
+            box-shadow: 0 0 35px rgba(0, 240, 255, 0.6);
         }
 
-        /* Floating Text Effect */
+        /* Floating Animation */
         .floating-text {
             position: absolute;
             color: var(--accent-color);
@@ -156,10 +167,11 @@
             100% { opacity: 0; transform: translateY(-50px); }
         }
 
-        /* Upgrades & Achievements Titles */
-        .panel-title {
-            font-size: 1.4rem;
-            margin-bottom: 15px;
+        /* Panel Headers & Lists */
+        .panel-header {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 12px;
             width: 100%;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             padding-bottom: 8px;
@@ -172,8 +184,8 @@
             width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            max-height: 480px;
+            gap: 10px;
+            max-height: 520px;
             overflow-y: auto;
             padding-right: 5px;
         }
@@ -182,8 +194,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 10px 14px;
             border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
@@ -191,32 +203,49 @@
         .upgrade-info {
             display: flex;
             flex-direction: column;
+            max-width: 65%;
         }
 
         .upgrade-name {
             font-weight: bold;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .upgrade-desc {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--subtext-color);
+            margin-top: 2px;
         }
+
+        .badge {
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-click { background: rgba(0, 240, 255, 0.2); color: var(--accent-color); }
+        .badge-passive { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+        .badge-formula { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
 
         .upgrade-btn {
             background-color: var(--accent-color);
             color: #000;
             border: none;
-            padding: 8px 14px;
+            padding: 8px 12px;
             border-radius: 6px;
             font-weight: bold;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: background 0.2s;
+            white-space: nowrap;
         }
 
-        .upgrade-btn:hover {
-            background-color: var(--accent-hover);
-        }
-
+        .upgrade-btn:hover { background-color: var(--accent-hover); }
         .upgrade-btn:disabled {
             background-color: var(--disabled-color);
             color: #64748b;
@@ -227,7 +256,7 @@
         .achievements-grid {
             width: 100%;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 12px;
         }
 
@@ -235,42 +264,102 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.25);
             padding: 12px;
             border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            opacity: 0.5;
+            opacity: 0.45;
             transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
         }
 
         .achievement-card.unlocked {
             opacity: 1;
             border-color: rgba(255, 215, 0, 0.3);
-            background: rgba(255, 215, 0, 0.05);
+            background: rgba(255, 215, 0, 0.03);
         }
 
-        .achievement-icon {
-            font-size: 2rem;
-        }
+        .achievement-icon { font-size: 2rem; }
 
         .achievement-details {
             display: flex;
             flex-direction: column;
+            width: 100%;
+        }
+
+        .achievement-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3px;
         }
 
         .achievement-title {
             font-weight: bold;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: var(--text-color);
         }
 
-        .achievement-card.unlocked .achievement-title {
-            color: var(--gold-color);
+        .achievement-card.unlocked .achievement-title { color: var(--gold-color); }
+        .achievement-desc { font-size: 0.75rem; color: var(--subtext-color); }
+
+        /* Difficulty Tags */
+        .diff-tag {
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
         }
 
-        .achievement-desc {
-            font-size: 0.8rem;
-            color: var(--subtext-color);
+        .diff-easy { background: var(--diff-easy); color: #000; }
+        .diff-medium { background: var(--diff-medium); color: #fff; }
+        .diff-hard { background: var(--diff-hard); color: #fff; }
+        .diff-extreme { background: var(--diff-extreme); color: #fff; }
+        .diff-insane { background: var(--diff-insane); color: #fff; }
+        .diff-wild { background: var(--diff-wild); color: #000; }
+
+        /* GLITCHED Tier Visual Effects */
+        .diff-glitched {
+            background: linear-gradient(90deg, #ff0055, #00f0ff, #00ff66);
+            background-size: 200% 200%;
+            color: #000;
+            font-weight: 900;
+            animation: glitchGradient 0.8s infinite linear;
+        }
+
+        .achievement-card.glitched-unlocked {
+            opacity: 1;
+            border: 1px solid #00f0ff;
+            background: rgba(0, 240, 255, 0.08);
+            box-shadow: 0 0 12px rgba(255, 0, 85, 0.4);
+            animation: cardGlitch 2s infinite alternate;
+        }
+
+        @keyframes cardGlitch {
+            0% { border-color: #00f0ff; box-shadow: 0 0 10px rgba(0, 240, 255, 0.4); }
+            50% { border-color: #ff0055; box-shadow: 0 0 15px rgba(255, 0, 85, 0.6); }
+            100% { border-color: #00ff66; box-shadow: 0 0 10px rgba(0, 255, 102, 0.4); }
+        }
+
+        @keyframes glitchGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .glitch-text {
+            text-shadow: 2px 0 #ff0055, -2px 0 #00f0ff;
+            animation: glitchAnim 1.2s infinite alternate;
+        }
+
+        @keyframes glitchAnim {
+            0% { text-shadow: 2px 0 #ff0055, -2px 0 #00f0ff; transform: translate(0); }
+            20% { text-shadow: -2px 0 #ff0055, 2px 0 #00f0ff; transform: translate(-1px, 1px); }
+            40% { text-shadow: 1px -1px #ff0055, -1px 1px #00f0ff; transform: translate(1px, -1px); }
+            60% { text-shadow: -2px 1px #ff0055, 2px -1px #00f0ff; transform: translate(-2px, 0); }
+            100% { text-shadow: 2px 0 #ff0055, -2px 0 #00f0ff; transform: translate(0); }
         }
 
         /* Toast Notifications */
@@ -289,13 +378,25 @@
             background: #1e293b;
             border: 2px solid var(--gold-color);
             color: #fff;
-            padding: 12px 20px;
+            padding: 12px 18px;
             border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.6);
             display: flex;
             align-items: center;
             gap: 12px;
             animation: slideIn 0.4s ease, fadeOut 0.5s ease 3.5s forwards;
+        }
+
+        .toast.glitch-toast {
+            border-color: #00f0ff;
+            background: #090d16;
+            animation: slideIn 0.4s ease, glitchToastAnim 0.3s infinite, fadeOut 0.5s ease 3.5s forwards;
+        }
+
+        @keyframes glitchToastAnim {
+            0% { box-shadow: 0 0 10px #ff0055; }
+            50% { box-shadow: 0 0 15px #00f0ff; }
+            100% { box-shadow: 0 0 10px #00ff66; }
         }
 
         @keyframes slideIn {
@@ -356,13 +457,17 @@
                     <div>Per Second</div>
                     <div class="stat-value" id="sps-display">0s/sec</div>
                 </div>
+                <div class="stat-box">
+                    <div>Total Clicks</div>
+                    <div class="stat-value" id="clicks-display">0</div>
+                </div>
             </div>
         </div>
 
         <!-- Upgrades Panel -->
         <div class="card">
-            <div class="panel-title">
-                <span>Temporal Upgrades</span>
+            <div class="panel-header">
+                <span>Upgrades</span>
             </div>
             <div class="upgrade-list" id="upgrade-list">
                 <!-- Upgrades generated dynamically -->
@@ -371,9 +476,9 @@
 
         <!-- Achievements Panel -->
         <div class="card full-width">
-            <div class="panel-title">
+            <div class="panel-header">
                 <span>🏆 Achievements</span>
-                <span id="achievement-count" style="font-size: 0.9rem; color: var(--subtext-color);">0 / 5</span>
+                <span id="achievement-count" style="font-size: 0.85rem; color: var(--subtext-color);">0 / 0</span>
             </div>
             <div class="achievements-grid" id="achievements-grid">
                 <!-- Achievements generated dynamically -->
@@ -386,65 +491,74 @@
         <button class="control-btn" id="reset-btn">Hard Reset</button>
     </div>
 
-    <!-- Container for notification toasts -->
     <div id="toast-container"></div>
 
     <script>
         // Game State
         let game = {
             seconds: 0,
-            maxSeconds: 0, // Tracks total lifetime accumulated time
+            maxSeconds: 0,
+            totalClicks: 0,
+            upgradesBought: 0,
             lastTick: Date.now(),
             upgrades: {
+                // Click Upgrades
                 watch: { name: "Digital Watch", cost: 15, power: 1, type: "click", count: 0, desc: "+1s per click" },
                 gear: { name: "Clockwork Gears", cost: 100, power: 5, type: "click", count: 0, desc: "+5s per click" },
+                pointer: { name: "Quantum Pointer", cost: 800, power: 30, type: "click", count: 0, desc: "+30s per click" },
+                glove: { name: "Chrono-Glove", cost: 5000, power: 250, type: "click", count: 0, desc: "+250s per click" },
+                dilationTap: { name: "Time-Dilation Tap", cost: 50000, power: 2000, type: "click", count: 0, desc: "+2,000s per click" },
+                lightSpeed: { name: "Light-Speed Clicker", cost: 500000, power: 18000, type: "click", count: 0, desc: "+18,000s per click" },
+
+                // Passive Upgrades
                 hourglass: { name: "Hourglass", cost: 20, power: 1, type: "passive", count: 0, desc: "+1s per sec" },
                 grandfather: { name: "Grandfather Clock", cost: 150, power: 5, type: "passive", count: 0, desc: "+5s per sec" },
                 atomic: { name: "Atomic Clock", cost: 1200, power: 45, type: "passive", count: 0, desc: "+45s per sec" },
                 timemachine: { name: "Time Machine", cost: 10000, power: 400, type: "passive", count: 0, desc: "+400s per sec" },
-                wormhole: { name: "Temporal Wormhole", cost: 100000, power: 5000, type: "passive", count: 0, desc: "+5,000s per sec" }
+                wormhole: { name: "Temporal Wormhole", cost: 100000, power: 5000, type: "passive", count: 0, desc: "+5,000s per sec" },
+                singularity: { name: "Singularity Core", cost: 1000000, power: 60000, type: "passive", count: 0, desc: "+60,000s per sec" },
+
+                // Formula & Multiplier Upgrades
+                overclock: { name: "Overclocked Escapement", cost: 500, type: "formula", count: 0, desc: "Multiplies ALL time gains by 1.5x" },
+                kinetic: { name: "Kinetic Momentum", cost: 2500, type: "formula", count: 0, desc: "Boosts Click Power based on total clicks" },
+                synergy: { name: "Temporal Synergizer", cost: 15000, type: "formula", count: 0, desc: "+2% global speed for every upgrade owned" },
+                chronos: { name: "Chronos Formula", cost: 75000, type: "formula", count: 0, desc: "Boosts passive speed based on lifetime time" },
+                paradox: { name: "Paradox Loop", cost: 5000000, type: "formula", count: 0, desc: "Doubles total time generation!" }
             },
             unlockedAchievements: {}
         };
 
         // Achievement Definitions
         const ACHIEVEMENTS = [
-            {
-                id: "ticking_time",
-                name: "Ticking Time",
-                desc: "Accumulate 1 second of time.",
-                icon: "⏱️",
-                req: () => game.maxSeconds >= 1
-            },
-            {
-                id: "wait_a_minute",
-                name: "Wait a Minute",
-                desc: "Reach 1 minute (60 seconds) of accumulated time.",
-                icon: "⌛",
-                req: () => game.maxSeconds >= 60
-            },
-            {
-                id: "zzz",
-                name: "ZZZ",
-                desc: "Reach 12 hours (43,200 seconds) of accumulated time.",
-                icon: "😴",
-                req: () => game.maxSeconds >= 43200
-            },
-            {
-                id: "age",
-                name: "Age",
-                desc: "Reach 1 year (31,536,000 seconds) of accumulated time.",
-                icon: "🏛️",
-                req: () => game.maxSeconds >= 31536000
-            },
-            {
-                id: "f12_secret",
-                name: "Hey! What are you doing!",
-                desc: "Opened the Developer Console using F12 / DevTools.",
-                icon: "💻",
-                secret: true,
-                req: () => false // Triggered specifically via Console/F12 event listener
-            }
+            // Easy
+            { id: "ticking_time", name: "Ticking Time", desc: "Accumulate 1 second of time.", icon: "⏱️", diff: "easy", req: () => game.maxSeconds >= 1 },
+            { id: "first_touch", name: "First Touch", desc: "Click the TICK TIME button once.", icon: "👆", diff: "easy", req: () => game.totalClicks >= 1 },
+            { id: "wait_a_minute", name: "Wait a Minute", desc: "Reach 1 minute (60s) of time.", icon: "⌛", diff: "easy", req: () => game.maxSeconds >= 60 },
+
+            // Medium
+            { id: "finger_workout", name: "Finger Workout", desc: "Click the time button 100 times.", icon: "🥊", diff: "medium", req: () => game.totalClicks >= 100 },
+            { id: "patience", name: "Pure Patience", desc: "Reach 300s (5 mins) without buying ANY upgrades!", icon: "🧘", diff: "medium", req: () => game.maxSeconds >= 300 && game.upgradesBought === 0 },
+            { id: "time_collector", name: "Time Collector", desc: "Own 10 total upgrades.", icon: "📦", diff: "medium", req: () => game.upgradesBought >= 10 },
+
+            // Hard
+            { id: "zzz", name: "ZZZ", desc: "Reach 12 hours (43,200s) of time.", icon: "😴", diff: "hard", req: () => game.maxSeconds >= 43200 },
+            { id: "click_marathon", name: "Click Marathon", desc: "Click the button 1,000 times.", icon: "🏃", diff: "hard", req: () => game.totalClicks >= 1000 },
+            { id: "speed_demon", name: "Speed Demon", desc: "Reach +1,000s/sec generation.", icon: "⚡", diff: "hard", req: () => getSPS() >= 1000 },
+
+            // Extreme
+            { id: "synergy_master", name: "Synergy Master", desc: "Own at least 50 total upgrades.", icon: "🔮", diff: "extreme", req: () => game.upgradesBought >= 50 },
+            { id: "century_clicker", name: "Century Clicker", desc: "Generate +10,000s in a single click.", icon: "💥", diff: "extreme", req: () => getClickPower() >= 10000 },
+
+            // Insane
+            { id: "age", name: "Age", desc: "Reach 1 year (31,536,000s) of accumulated time.", icon: "🏛️", diff: "insane", req: () => game.maxSeconds >= 31536000 },
+            { id: "carpal_tunnel", name: "Carpal Tunnel Paradox", desc: "Click the time button 10,000 times.", icon: "🦾", diff: "insane", req: () => game.totalClicks >= 10000 },
+
+            // Wild
+            { id: "time_lord", name: "Time Lord", desc: "Reach 100 Years (3,153,600,000s) of total time.", icon: "👑", diff: "wild", req: () => game.maxSeconds >= 3153600000 },
+
+            // GLITCHED
+            { id: "f12_secret", name: "Hey! What are you doing!", desc: "Opened Developer Console / DevTools.", icon: "👾", diff: "glitched", secret: true, req: () => false },
+            { id: "temporal_glitch", name: "ERR_TEMPORAL_OVERFLOW", desc: "Trigger an insane speed multiplier or reach 1 Billion seconds.", icon: "⚠️", diff: "glitched", secret: true, req: () => game.maxSeconds >= 1000000000 }
         ];
 
         // DOM Elements
@@ -452,287 +566,8 @@
         const formattedEl = document.getElementById('time-formatted-display');
         const spcEl = document.getElementById('spc-display');
         const spsEl = document.getElementById('sps-display');
+        const clicksEl = document.getElementById('clicks-display');
         const clickBtn = document.getElementById('click-btn');
         const upgradeListEl = document.getElementById('upgrade-list');
         const achievementsGridEl = document.getElementById('achievements-grid');
-        const achievementCountEl = document.getElementById('achievement-count');
-        const toastContainer = document.getElementById('toast-container');
-
-        // Helpers
-        function formatNumber(num) {
-            return Math.floor(num).toLocaleString();
-        }
-
-        function formatTimeReadable(totalSeconds) {
-            let s = Math.floor(totalSeconds);
-            const years = Math.floor(s / (365 * 24 * 3600));
-            s %= (365 * 24 * 3600);
-            const days = Math.floor(s / (24 * 3600));
-            s %= (24 * 3600);
-            const hours = Math.floor(s / 3600);
-            s %= 3600;
-            const minutes = Math.floor(s / 60);
-            const seconds = s % 60;
-
-            let parts = [];
-            if (years > 0) parts.push(`${years}y`);
-            if (days > 0) parts.push(`${days}d`);
-            if (hours > 0) parts.push(`${hours}h`);
-            if (minutes > 0 || hours > 0 || days > 0 || years > 0) parts.push(`${minutes}m`);
-            parts.push(`${seconds}s`);
-
-            return parts.slice(0, 3).join(' ');
-        }
-
-        function getSPS() {
-            let sps = 0;
-            for (let id in game.upgrades) {
-                if (game.upgrades[id].type === "passive") {
-                    sps += game.upgrades[id].count * game.upgrades[id].power;
-                }
-            }
-            return sps;
-        }
-
-        function getClickPower() {
-            let power = 1;
-            for (let id in game.upgrades) {
-                if (game.upgrades[id].type === "click") {
-                    power += game.upgrades[id].count * game.upgrades[id].power;
-                }
-            }
-            return power;
-        }
-
-        // Achievements Logic
-        function checkAchievements() {
-            ACHIEVEMENTS.forEach(ach => {
-                if (!game.unlockedAchievements[ach.id] && ach.req()) {
-                    unlockAchievement(ach.id);
-                }
-            });
-        }
-
-        function unlockAchievement(id) {
-            if (game.unlockedAchievements[id]) return;
-
-            const ach = ACHIEVEMENTS.find(a => a.id === id);
-            if (!ach) return;
-
-            game.unlockedAchievements[id] = true;
-            showToast(ach);
-            renderAchievements();
-            saveGame();
-        }
-
-        function showToast(ach) {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerHTML = `
-                <div style="font-size: 1.8rem;">${ach.icon}</div>
-                <div>
-                    <div style="font-size:0.75rem; color: var(--gold-color); font-weight: bold; text-transform: uppercase;">Achievement Unlocked!</div>
-                    <div style="font-weight: bold;">${ach.name}</div>
-                </div>
-            `;
-            toastContainer.appendChild(toast);
-
-            setTimeout(() => {
-                toast.remove();
-            }, 4000);
-        }
-
-        function renderAchievements() {
-            achievementsGridEl.innerHTML = '';
-            let unlockedTotal = 0;
-
-            ACHIEVEMENTS.forEach(ach => {
-                const isUnlocked = !!game.unlockedAchievements[ach.id];
-                if (isUnlocked) unlockedTotal++;
-
-                const card = document.createElement('div');
-                card.className = `achievement-card ${isUnlocked ? 'unlocked' : ''}`;
-                
-                const titleText = (ach.secret && !isUnlocked) ? '???' : ach.name;
-                const descText = (ach.secret && !isUnlocked) ? 'Secret achievement. Figure out how to unlock it!' : ach.desc;
-                const iconText = isUnlocked ? ach.icon : '🔒';
-
-                card.innerHTML = `
-                    <div class="achievement-icon">${iconText}</div>
-                    <div class="achievement-details">
-                        <span class="achievement-title">${titleText}</span>
-                        <span class="achievement-desc">${descText}</span>
-                    </div>
-                `;
-
-                achievementsGridEl.appendChild(card);
-            });
-
-            achievementCountEl.textContent = `${unlockedTotal} / ${ACHIEVEMENTS.length}`;
-        }
-
-        // Render Upgrades UI
-        function createUpgradeUI() {
-            upgradeListEl.innerHTML = '';
-            for (let id in game.upgrades) {
-                const upg = game.upgrades[id];
-
-                const item = document.createElement('div');
-                item.className = 'upgrade-item';
-                item.innerHTML = `
-                    <div class="upgrade-info">
-                        <span class="upgrade-name">${upg.name} (${upg.count})</span>
-                        <span class="upgrade-desc">${upg.desc}</span>
-                    </div>
-                    <button class="upgrade-btn" id="btn-${id}">
-                        ${formatNumber(upg.cost)}s
-                    </button>
-                `;
-
-                upgradeListEl.appendChild(item);
-                document.getElementById(`btn-${id}`).addEventListener('click', () => buyUpgrade(id));
-            }
-        }
-
-        // Update UI Loop
-        function updateUI() {
-            secondsEl.textContent = `${formatNumber(game.seconds)}s`;
-            formattedEl.textContent = formatTimeReadable(game.seconds);
-            spcEl.textContent = `+${formatNumber(getClickPower())}s`;
-            spsEl.textContent = `${formatNumber(getSPS())}s/sec`;
-
-            // Update buttons
-            for (let id in game.upgrades) {
-                const upg = game.upgrades[id];
-                const btn = document.getElementById(`btn-${id}`);
-                if (btn) {
-                    btn.disabled = game.seconds < upg.cost;
-                    btn.innerHTML = `${formatNumber(upg.cost)}s`;
-                    const nameEl = btn.parentElement.querySelector('.upgrade-name');
-                    nameEl.textContent = `${upg.name} (${upg.count})`;
-                }
-            }
-        }
-
-        // Buy Upgrade Logic
-        function buyUpgrade(id) {
-            const upg = game.upgrades[id];
-            if (game.seconds >= upg.cost) {
-                game.seconds -= upg.cost;
-                upg.count++;
-                upg.cost = Math.floor(upg.cost * 1.15);
-                updateUI();
-            }
-        }
-
-        // Click Action
-        clickBtn.addEventListener('click', (e) => {
-            const addedSeconds = getClickPower();
-            game.seconds += addedSeconds;
-            game.maxSeconds += addedSeconds;
-
-            // Spawn floating text
-            const text = document.createElement('div');
-            text.className = 'floating-text';
-            text.textContent = `+${formatNumber(addedSeconds)}s`;
-            
-            const rect = clickBtn.getBoundingClientRect();
-            const x = e.clientX - rect.left - 20;
-            const y = e.clientY - rect.top - 20;
-
-            text.style.left = `${x}px`;
-            text.style.top = `${y}px`;
-
-            clickBtn.parentElement.appendChild(text);
-
-            setTimeout(() => text.remove(), 800);
-
-            checkAchievements();
-            updateUI();
-        });
-
-        // Loop
-        function gameLoop() {
-            const now = Date.now();
-            const delta = (now - game.lastTick) / 1000;
-            game.lastTick = now;
-
-            const gained = getSPS() * delta;
-            game.seconds += gained;
-            game.maxSeconds += gained;
-
-            checkAchievements();
-            updateUI();
-        }
-
-        // Detect Console / F12 Opening (Secret Achievement)
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'F12' || 
-               (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
-               (e.metaKey && e.altKey && (e.key === 'I' || e.key === 'i'))) {
-                unlockAchievement('f12_secret');
-            }
-        });
-
-        // Console inspection detector
-        const element = new Image();
-        Object.defineProperty(element, 'id', {
-            get: function () {
-                unlockAchievement('f12_secret');
-            }
-        });
-        setInterval(() => {
-            console.log('%c', element);
-        }, 2000);
-
-        // Save & Load
-        function saveGame() {
-            localStorage.setItem('timeClickerSave', JSON.stringify(game));
-        }
-
-        function loadGame() {
-            const saved = localStorage.getItem('timeClickerSave');
-            if (saved) {
-                const loaded = JSON.parse(saved);
-                
-                game.seconds = loaded.seconds || 0;
-                game.maxSeconds = loaded.maxSeconds || game.seconds;
-                game.lastTick = Date.now();
-                game.unlockedAchievements = loaded.unlockedAchievements || {};
-
-                if (loaded.upgrades) {
-                    for (let id in loaded.upgrades) {
-                        if (game.upgrades[id]) {
-                            game.upgrades[id].count = loaded.upgrades[id].count || 0;
-                            game.upgrades[id].cost = loaded.upgrades[id].cost || game.upgrades[id].cost;
-                        }
-                    }
-                }
-            }
-        }
-
-        function resetGame() {
-            if (confirm("Are you sure you want to reset all progress and achievements?")) {
-                localStorage.removeItem('timeClickerSave');
-                location.reload();
-            }
-        }
-
-        document.getElementById('save-btn').addEventListener('click', () => {
-            saveGame();
-            alert("Game saved!");
-        });
-
-        document.getElementById('reset-btn').addEventListener('click', resetGame);
-
-        // Auto Save every 10 seconds
-        setInterval(saveGame, 10000);
-
-        // Init
-        loadGame();
-        createUpgradeUI();
-        renderAchievements();
-        setInterval(gameLoop, 100);
-    </script>
-</body>
-</html>
+        const achievementCo
