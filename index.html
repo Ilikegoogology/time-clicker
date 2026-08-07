@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Clicker - Googology Engine</title>
+    <title>Time Clicker - Fixed Googology Engine</title>
     <style>
         :root {
             --bg-color: #060911;
@@ -210,14 +210,14 @@
         .progress-bar-bg {
             width: 100%;
             background: rgba(0, 0, 0, 0.4);
-            height: 100%;
-            border-radius: 5px;
+            height: 12px;
+            border-radius: 6px;
             overflow: hidden;
             margin-top: 10px;
         }
 
         .progress-bar-fill {
-            height: 10px;
+            height: 100%;
             background: linear-gradient(90deg, #a855f7, #00f0ff);
             width: 0%;
             transition: width 0.3s;
@@ -584,13 +584,16 @@
 
     <script>
         // -------------------------------------------------------------
-        // Custom BigNum Engine (Mantissa + Exponent Math Object)
+        // Custom Robust BigNum Engine (Mantissa + Exponent)
         // -------------------------------------------------------------
         class BigNum {
-            constructor(m, e = 0) {
+            constructor(m, e) {
                 if (m instanceof BigNum) {
                     this.m = m.m;
                     this.e = m.e;
+                } else if (e !== undefined) {
+                    this.m = Number(m) || 0;
+                    this.e = Number(e) || 0;
                 } else if (typeof m === 'number') {
                     if (m === 0 || !isFinite(m)) {
                         this.m = 0;
@@ -606,8 +609,8 @@
                     this.m = b.m;
                     this.e = b.e;
                 } else {
-                    this.m = m || 0;
-                    this.e = e || 0;
+                    this.m = 0;
+                    this.e = 0;
                 }
                 this.normalize();
             }
@@ -647,6 +650,8 @@
             sub(other) {
                 other = BigNum.from(other);
                 if (other.m === 0) return new BigNum(this.m, this.e);
+                if (this.m === 0) return new BigNum(-other.m, other.e);
+
                 let diff = this.e - other.e;
                 if (diff > 15) return new BigNum(this.m, this.e);
                 if (diff < -15) return new BigNum(-other.m, other.e);
@@ -668,8 +673,16 @@
 
             pow(exp) {
                 if (this.m === 0) return new BigNum(0, 0);
-                let newE = this.e * exp;
-                let newM = Math.pow(this.m, exp);
+                if (exp === 0) return new BigNum(1, 0);
+
+                let totalE = exp * (this.e + Math.log10(Math.abs(this.m)));
+                let newE = Math.floor(totalE);
+                let frac = totalE - newE;
+                let newM = Math.pow(10, frac);
+
+                if (this.m < 0 && Math.floor(exp) % 2 !== 0) {
+                    newM = -newM;
+                }
                 return new BigNum(newM, newE);
             }
 
@@ -684,12 +697,18 @@
 
             gte(other) {
                 other = BigNum.from(other);
+                if (this.m === 0 && other.m === 0) return true;
+                if (this.m === 0) return other.m <= 0;
+                if (other.m === 0) return this.m >= 0;
                 if (this.e !== other.e) return this.e > other.e;
                 return this.m >= other.m;
             }
 
             gt(other) {
                 other = BigNum.from(other);
+                if (this.m === 0 && other.m === 0) return false;
+                if (this.m === 0) return other.m < 0;
+                if (other.m === 0) return this.m > 0;
                 if (this.e !== other.e) return this.e > other.e;
                 return this.m > other.m;
             }
@@ -1244,12 +1263,17 @@
         });
         setInterval(() => { console.log('%c', element); }, 2000);
 
-        // Save & Load
+        // Safe Save & Load
         function parseBigNum(obj) {
             if (!obj) return new BigNum(0);
             if (obj instanceof BigNum) return obj;
             if (typeof obj === 'number') return new BigNum(obj);
-            return new BigNum(obj.m || 0, obj.e || 0);
+            if (typeof obj === 'object') {
+                let m = typeof obj.m === 'number' ? obj.m : 0;
+                let e = typeof obj.e === 'number' ? obj.e : 0;
+                return new BigNum(m, e);
+            }
+            return new BigNum(0);
         }
 
         function saveGame() {
@@ -1257,36 +1281,46 @@
         }
 
         function loadGame() {
-            const saved = localStorage.getItem('timeClickerSave');
-            if (saved) {
-                const loaded = JSON.parse(saved);
-                
-                game.seconds = parseBigNum(loaded.seconds);
-                game.maxSeconds = parseBigNum(loaded.maxSeconds);
-                game.universes = parseBigNum(loaded.universes);
-                game.totalClicks = loaded.totalClicks || 0;
-                game.upgradesBought = loaded.upgradesBought || 0;
-                game.universifyCount = loaded.universifyCount || 0;
-                game.lastTick = Date.now();
-                game.unlockedAchievements = loaded.unlockedAchievements || {};
+            try {
+                const saved = localStorage.getItem('timeClickerSave');
+                if (saved) {
+                    const loaded = JSON.parse(saved);
+                    
+                    game.seconds = parseBigNum(loaded.seconds);
+                    game.maxSeconds = parseBigNum(loaded.maxSeconds);
+                    game.universes = parseBigNum(loaded.universes);
+                    game.totalClicks = loaded.totalClicks || 0;
+                    game.upgradesBought = loaded.upgradesBought || 0;
+                    game.universifyCount = loaded.universifyCount || 0;
+                    game.lastTick = Date.now();
+                    game.unlockedAchievements = loaded.unlockedAchievements || {};
 
-                if (loaded.upgrades) {
-                    for (let id in loaded.upgrades) {
-                        if (game.upgrades[id]) {
-                            game.upgrades[id].count = loaded.upgrades[id].count || 0;
-                            game.upgrades[id].cost = parseBigNum(loaded.upgrades[id].cost);
+                    if (loaded.upgrades) {
+                        for (let id in loaded.upgrades) {
+                            if (game.upgrades[id]) {
+                                game.upgrades[id].count = loaded.upgrades[id].count || 0;
+                                if (loaded.upgrades[id].cost) {
+                                    game.upgrades[id].cost = parseBigNum(loaded.upgrades[id].cost);
+                                }
+                            }
+                        }
+                    }
+
+                    if (loaded.cosmicUpgrades) {
+                        for (let id in loaded.cosmicUpgrades) {
+                            if (game.cosmicUpgrades[id]) {
+                                game.cosmicUpgrades[id].count = loaded.cosmicUpgrades[id].count || 0;
+                                if (loaded.cosmicUpgrades[id].cost) {
+                                    game.cosmicUpgrades[id].cost = parseBigNum(loaded.cosmicUpgrades[id].cost);
+                                }
+                            }
                         }
                     }
                 }
-
-                if (loaded.cosmicUpgrades) {
-                    for (let id in loaded.cosmicUpgrades) {
-                        if (game.cosmicUpgrades[id]) {
-                            game.cosmicUpgrades[id].count = loaded.cosmicUpgrades[id].count || 0;
-                            game.cosmicUpgrades[id].cost = parseBigNum(loaded.cosmicUpgrades[id].cost);
-                        }
-                    }
-                }
+            } catch (err) {
+                console.error("Recovered from broken save state:", err);
+                game.seconds = new BigNum(0);
+                game.maxSeconds = new BigNum(0);
             }
         }
 
