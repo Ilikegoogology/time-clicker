@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Clicker - Glitched Update</title>
+    <title>Time Clicker - Googology Engine</title>
     <style>
         :root {
             --bg-color: #060911;
@@ -83,14 +83,12 @@
             align-items: center;
         }
 
-        /* Universify Card Theme */
         .card-cosmic {
             background: linear-gradient(135deg, #180d2b 0%, #0f172a 100%);
             border: 1px solid rgba(168, 85, 247, 0.4);
             box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
         }
 
-        /* Time Display */
         .time-display {
             text-align: center;
             width: 100%;
@@ -101,6 +99,7 @@
             font-weight: bold;
             color: var(--accent-color);
             margin: 10px 0;
+            word-break: break-all;
         }
 
         .time-formatted {
@@ -137,7 +136,6 @@
 
         .stat-value.cosmic { color: #c084fc; }
 
-        /* Click Button */
         .click-area {
             position: relative;
             margin: 20px 0;
@@ -163,7 +161,6 @@
             box-shadow: 0 0 35px rgba(0, 240, 255, 0.6);
         }
 
-        /* Floating Text Effect */
         .floating-text {
             position: absolute;
             color: var(--accent-color);
@@ -178,7 +175,6 @@
             100% { opacity: 0; transform: translateY(-50px); }
         }
 
-        /* Universify Button */
         .universify-btn {
             background: linear-gradient(90deg, #9333ea, #c084fc, #9333ea);
             background-size: 200% 200%;
@@ -196,10 +192,7 @@
             transition: transform 0.2s;
         }
 
-        .universify-btn:hover:not(:disabled) {
-            transform: scale(1.02);
-        }
-
+        .universify-btn:hover:not(:disabled) { transform: scale(1.02); }
         .universify-btn:disabled {
             background: var(--disabled-color);
             color: #64748b;
@@ -214,24 +207,22 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Progress Bar */
         .progress-bar-bg {
             width: 100%;
             background: rgba(0, 0, 0, 0.4);
-            height: 10px;
+            height: 100%;
             border-radius: 5px;
             overflow: hidden;
             margin-top: 10px;
         }
 
         .progress-bar-fill {
-            height: 100%;
+            height: 10px;
             background: linear-gradient(90deg, #a855f7, #00f0ff);
             width: 0%;
             transition: width 0.3s;
         }
 
-        /* Headers & Upgrade Lists */
         .panel-header {
             font-size: 1.3rem;
             font-weight: bold;
@@ -374,7 +365,6 @@
         .achievement-card.unlocked .achievement-title { color: var(--gold-color); }
         .achievement-desc { font-size: 0.75rem; color: var(--subtext-color); }
 
-        /* Difficulty Tags */
         .diff-tag {
             font-size: 0.6rem;
             padding: 2px 6px;
@@ -390,7 +380,6 @@
         .diff-insane { background: var(--diff-insane); color: #fff; }
         .diff-wild { background: var(--diff-wild); color: #000; }
 
-        /* GLITCHED Tier Visual Effects */
         .diff-glitched {
             background: linear-gradient(90deg, #ff0055, #00f0ff, #00ff66);
             background-size: 200% 200%;
@@ -432,7 +421,6 @@
             100% { text-shadow: 2px 0 #ff0055, -2px 0 #00f0ff; transform: translate(0); }
         }
 
-        /* Toast Notifications */
         #toast-container {
             position: fixed;
             top: 20px;
@@ -479,7 +467,6 @@
             to { opacity: 0; transform: translateY(-10px); }
         }
 
-        /* Controls */
         .controls {
             margin-top: 20px;
             display: flex;
@@ -596,28 +583,181 @@
     <div id="toast-container"></div>
 
     <script>
-        const UNIVERSIFY_REQ = 13800000000; // 13.8 Billion Seconds
-
-        // BigNum Abbreviation System
-        const SUFFIXES = [
-            "", "k", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc",
-            "Ud", "Dd", "Td", "Qad", "Qid", "Sxd", "Spd", "Ocd", "Nod", "Vg"
-        ];
-
-        function formatNumber(num) {
-            if (num === null || num === undefined || isNaN(num)) return "0";
-            if (num < 1000) return num < 10 && num % 1 !== 0 ? num.toFixed(1) : Math.floor(num).toLocaleString();
-            
-            const e = Math.floor(Math.log10(num) / 3);
-            if (e < SUFFIXES.length) {
-                const scaled = num / Math.pow(10, e * 3);
-                return scaled.toFixed(2) + SUFFIXES[e];
+        // -------------------------------------------------------------
+        // Custom BigNum Engine (Mantissa + Exponent Math Object)
+        // -------------------------------------------------------------
+        class BigNum {
+            constructor(m, e = 0) {
+                if (m instanceof BigNum) {
+                    this.m = m.m;
+                    this.e = m.e;
+                } else if (typeof m === 'number') {
+                    if (m === 0 || !isFinite(m)) {
+                        this.m = 0;
+                        this.e = 0;
+                    } else {
+                        let eVal = Math.floor(Math.log10(Math.abs(m)));
+                        this.m = m / Math.pow(10, eVal);
+                        this.e = eVal;
+                    }
+                } else if (typeof m === 'string') {
+                    let parsed = parseFloat(m);
+                    let b = new BigNum(parsed);
+                    this.m = b.m;
+                    this.e = b.e;
+                } else {
+                    this.m = m || 0;
+                    this.e = e || 0;
+                }
+                this.normalize();
             }
-            return num.toExponential(2).replace("+", "");
+
+            normalize() {
+                if (this.m === 0 || !isFinite(this.m)) {
+                    this.m = 0;
+                    this.e = 0;
+                    return;
+                }
+                let absM = Math.abs(this.m);
+                if (absM >= 10 || absM < 1) {
+                    let shift = Math.floor(Math.log10(absM));
+                    this.m = this.m / Math.pow(10, shift);
+                    this.e += shift;
+                }
+            }
+
+            static from(val) {
+                if (val instanceof BigNum) return val;
+                return new BigNum(val);
+            }
+
+            add(other) {
+                other = BigNum.from(other);
+                if (this.m === 0) return new BigNum(other.m, other.e);
+                if (other.m === 0) return new BigNum(this.m, this.e);
+
+                let diff = this.e - other.e;
+                if (diff > 15) return new BigNum(this.m, this.e);
+                if (diff < -15) return new BigNum(other.m, other.e);
+
+                let newM = this.m + other.m * Math.pow(10, -diff);
+                return new BigNum(newM, this.e);
+            }
+
+            sub(other) {
+                other = BigNum.from(other);
+                if (other.m === 0) return new BigNum(this.m, this.e);
+                let diff = this.e - other.e;
+                if (diff > 15) return new BigNum(this.m, this.e);
+                if (diff < -15) return new BigNum(-other.m, other.e);
+
+                let newM = this.m - other.m * Math.pow(10, -diff);
+                return new BigNum(newM, this.e);
+            }
+
+            mul(other) {
+                other = BigNum.from(other);
+                return new BigNum(this.m * other.m, this.e + other.e);
+            }
+
+            div(other) {
+                other = BigNum.from(other);
+                if (other.m === 0) return new BigNum(0, 0);
+                return new BigNum(this.m / other.m, this.e - other.e);
+            }
+
+            pow(exp) {
+                if (this.m === 0) return new BigNum(0, 0);
+                let newE = this.e * exp;
+                let newM = Math.pow(this.m, exp);
+                return new BigNum(newM, newE);
+            }
+
+            floor() {
+                if (this.e < 0) return new BigNum(0, 0);
+                if (this.e < 15) {
+                    let val = Math.floor(this.m * Math.pow(10, this.e));
+                    return new BigNum(val);
+                }
+                return new BigNum(this.m, this.e);
+            }
+
+            gte(other) {
+                other = BigNum.from(other);
+                if (this.e !== other.e) return this.e > other.e;
+                return this.m >= other.m;
+            }
+
+            gt(other) {
+                other = BigNum.from(other);
+                if (this.e !== other.e) return this.e > other.e;
+                return this.m > other.m;
+            }
+
+            lt(other) { return !this.gte(other); }
+            lte(other) { return !this.gt(other); }
+            toNumber() { return this.m * Math.pow(10, this.e); }
+        }
+
+        // -------------------------------------------------------------
+        // Googology Short Scale System
+        // -------------------------------------------------------------
+        function getGoogologyPrefix(i) {
+            if (i === 0) return "";
+            if (i === 1) return "k";
+            if (i === 2) return "M";
+            if (i === 3) return "B";
+            if (i === 4) return "T";
+            if (i === 5) return "Qa";
+            if (i === 6) return "Qi";
+            if (i === 7) return "Sx";
+            if (i === 8) return "Sp";
+            if (i === 9) return "Oc";
+            if (i === 10) return "No";
+
+            let n = i - 1;
+            let u = n % 10;
+            let t = Math.floor(n / 10) % 10;
+            let h = Math.floor(n / 100) % 10;
+
+            let uList = ["", "Un", "Duo", "Tre", "Qa", "Qi", "Sx", "Sp", "Oc", "No"];
+            let tList = ["", "Dc", "Vg", "Tg", "Qag", "Qig", "Sxg", "Spg", "Ocg", "Nog"];
+            let hList = ["", "Cent", "Dcent", "Tcent", "Qgent", "Qnent", "Scent", "Spte", "Octe", "Ngn"];
+
+            if (n >= 1000) {
+                return "Mill";
+            }
+
+            return uList[u] + tList[t] + hList[h];
+        }
+
+        function formatNumber(val) {
+            let num = BigNum.from(val);
+            if (num.m === 0) return "0";
+
+            if (num.e < 3) {
+                let v = num.toNumber();
+                return v < 10 && v % 1 !== 0 ? v.toFixed(1) : Math.floor(v).toLocaleString();
+            }
+
+            let i = Math.floor(num.e / 3);
+            let rem = num.e % 3;
+            let mantissa = num.m * Math.pow(10, rem);
+
+            if (num.e >= 3000) {
+                return mantissa.toFixed(2) + "e" + num.e;
+            }
+
+            let prefix = getGoogologyPrefix(i);
+            return mantissa.toFixed(2) + prefix;
         }
 
         function formatTimeReadable(totalSeconds) {
-            let s = Math.floor(totalSeconds);
+            let s = Math.floor(totalSeconds.toNumber());
+            if (!isFinite(s) || totalSeconds.gte(new BigNum(1, 12))) {
+                return `${formatNumber(totalSeconds)} seconds`;
+            }
+
             const years = Math.floor(s / (365 * 24 * 3600));
             s %= (365 * 24 * 3600);
             const days = Math.floor(s / (24 * 3600));
@@ -637,84 +777,95 @@
             return parts.slice(0, 3).join(' ');
         }
 
+        const UNIVERSIFY_REQ = new BigNum(1.38, 10); // 13.8 Billion Seconds
+
+        // -------------------------------------------------------------
         // Game State
+        // -------------------------------------------------------------
         let game = {
-            seconds: 0,
-            maxSeconds: 0,
+            seconds: new BigNum(0),
+            maxSeconds: new BigNum(0),
             totalClicks: 0,
             upgradesBought: 0,
-            universes: 0,
+            universes: new BigNum(0),
             universifyCount: 0,
             lastTick: Date.now(),
             upgrades: {
-                // Click Upgrades
-                watch: { name: "Digital Watch", cost: 15, power: 1, type: "click", count: 0, desc: "+1s per click" },
-                gear: { name: "Clockwork Gears", cost: 100, power: 5, type: "click", count: 0, desc: "+5s per click" },
-                pointer: { name: "Quantum Pointer", cost: 800, power: 30, type: "click", count: 0, desc: "+30s per click" },
-                glove: { name: "Chrono-Glove", cost: 5000, power: 250, type: "click", count: 0, desc: "+250s per click" },
-                dilationTap: { name: "Time-Dilation Tap", cost: 50000, power: 2000, type: "click", count: 0, desc: "+2,000s per click" },
-                tachyonBeam: { name: "Tachyon Beam", cost: 500000, power: 18000, type: "click", count: 0, desc: "+18,000s per click" },
-                bigRipClicker: { name: "Big Rip Clicker", cost: 1e9, power: 5000000, type: "click", count: 0, desc: "+5,000,000s per click" },
+                watch: { name: "Digital Watch", cost: new BigNum(15), power: new BigNum(1), type: "click", count: 0, desc: "+1s per click" },
+                gear: { name: "Clockwork Gears", cost: new BigNum(100), power: new BigNum(5), type: "click", count: 0, desc: "+5s per click" },
+                pointer: { name: "Quantum Pointer", cost: new BigNum(800), power: new BigNum(30), type: "click", count: 0, desc: "+30s per click" },
+                glove: { name: "Chrono-Glove", cost: new BigNum(5000), power: new BigNum(250), type: "click", count: 0, desc: "+250s per click" },
+                dilationTap: { name: "Time-Dilation Tap", cost: new BigNum(50000), power: new BigNum(2000), type: "click", count: 0, desc: "+2,000s per click" },
+                tachyonBeam: { name: "Tachyon Beam", cost: new BigNum(500000), power: new BigNum(18000), type: "click", count: 0, desc: "+18,000s per click" },
+                bigRipClicker: { name: "Big Rip Clicker", cost: new BigNum(1, 9), power: new BigNum(5, 6), type: "click", count: 0, desc: "+5,000,000s per click" },
 
-                // Passive Upgrades
-                hourglass: { name: "Hourglass", cost: 20, power: 1, type: "passive", count: 0, desc: "+1s per sec" },
-                grandfather: { name: "Grandfather Clock", cost: 150, power: 5, type: "passive", count: 0, desc: "+5s per sec" },
-                atomic: { name: "Atomic Clock", cost: 1200, power: 45, type: "passive", count: 0, desc: "+45s per sec" },
-                timemachine: { name: "Time Machine", cost: 10000, power: 400, type: "passive", count: 0, desc: "+400s per sec" },
-                wormhole: { name: "Temporal Wormhole", cost: 100000, power: 5000, type: "passive", count: 0, desc: "+5,000s per sec" },
-                singularity: { name: "Singularity Core", cost: 1000000, power: 60000, type: "passive", count: 0, desc: "+60,000s per sec" },
-                multiverseGen: { name: "Multiverse Generator", cost: 5e8, power: 25000000, type: "passive", count: 0, desc: "+25,000,000s per sec" },
+                hourglass: { name: "Hourglass", cost: new BigNum(20), power: new BigNum(1), type: "passive", count: 0, desc: "+1s per sec" },
+                grandfather: { name: "Grandfather Clock", cost: new BigNum(150), power: new BigNum(5), type: "passive", count: 0, desc: "+5s per sec" },
+                atomic: { name: "Atomic Clock", cost: new BigNum(1200), power: new BigNum(45), type: "passive", count: 0, desc: "+45s per sec" },
+                timemachine: { name: "Time Machine", cost: new BigNum(10000), power: new BigNum(400), type: "passive", count: 0, desc: "+400s per sec" },
+                wormhole: { name: "Temporal Wormhole", cost: new BigNum(100000), power: new BigNum(5000), type: "passive", count: 0, desc: "+5,000s per sec" },
+                singularity: { name: "Singularity Core", cost: new BigNum(1, 6), power: new BigNum(6, 4), type: "passive", count: 0, desc: "+60,000s per sec" },
+                multiverseGen: { name: "Multiverse Generator", cost: new BigNum(5, 8), power: new BigNum(2.5, 7), type: "passive", count: 0, desc: "+25,000,000s per sec" },
 
                 // Formula Upgrades
-                overclock: { name: "Overclocked Escapement", cost: 500, type: "formula", count: 0, desc: "Multiplies ALL time gains by 1.5x" },
-                kinetic: { name: "Kinetic Momentum", cost: 2500, type: "formula", count: 0, desc: "Boosts Click Power based on total clicks" },
-                synergy: { name: "Temporal Synergizer", cost: 15000, type: "formula", count: 0, desc: "+2% global speed per upgrade owned" },
-                chronos: { name: "Chronos Formula", cost: 75000, type: "formula", count: 0, desc: "Boosts passive speed based on lifetime time" },
-                dimFolding: { name: "Dimensional Folding", cost: 1e10, type: "formula", count: 0, desc: "Triples total time generation!" }
+                overclock: { name: "Overclocked Escapement", cost: new BigNum(500), type: "formula", count: 0, desc: "Multiplies ALL time gains by 1.5x" },
+                kinetic: { name: "Kinetic Momentum", cost: new BigNum(2500), type: "formula", count: 0, desc: "Boosts Click Power based on total clicks" },
+                synergy: { name: "Temporal Synergizer", cost: new BigNum(15000), type: "formula", count: 0, desc: "+2% global speed per upgrade owned" },
+                chronos: { name: "Chronos Formula", cost: new BigNum(75000), type: "formula", count: 0, desc: "Boosts passive speed based on lifetime time" },
+                dimFolding: { name: "Dimensional Folding", cost: new BigNum(1, 10), type: "formula", count: 0, desc: "Triples total time generation!" },
+
+                // Googology High-Tier Upgrades
+                googolEngine: { name: "Googol Engine", cost: new BigNum(1, 100), type: "formula", count: 0, desc: "Googol power! Multiplies time generation by 10,000x!" },
+                centillionDisruptor: { name: "Centillion Disruptor", cost: new BigNum(1, 303), type: "formula", count: 0, desc: "Centillion power! Multiplies time generation by 1e10x!" },
+                omniverseOverdrive: { name: "Omniverse Overdrive", cost: new BigNum(1, 1000), type: "formula", count: 0, desc: "Beyond reality! Multiplies time generation by 1e50x!" }
             },
             cosmicUpgrades: {
-                bigBang: { name: "Big Bang Ignition", cost: 1, count: 0, desc: "Each Universe gives +100% additional speed boost!" },
-                darkMatter: { name: "Dark Matter Engine", cost: 3, count: 0, desc: "Multiplies passive speed by 5x per level." },
-                singularityTap: { name: "Singularity Tap", cost: 5, count: 0, desc: "Multiplies click power by 10x per level." }
+                bigBang: { name: "Big Bang Ignition", cost: new BigNum(1), count: 0, desc: "Each Universe gives +100% additional speed boost!" },
+                darkMatter: { name: "Dark Matter Engine", cost: new BigNum(3), count: 0, desc: "Multiplies passive speed by 5x per level." },
+                singularityTap: { name: "Singularity Tap", cost: new BigNum(5), count: 0, desc: "Multiplies click power by 10x per level." }
             },
             unlockedAchievements: {}
         };
 
-        // Achievements Definition
+        // -------------------------------------------------------------
+        // Achievements Definitions
+        // -------------------------------------------------------------
         const ACHIEVEMENTS = [
             // Easy
-            { id: "ticking_time", name: "Ticking Time", desc: "Accumulate 1 second of time.", icon: "⏱️", diff: "easy", req: () => game.maxSeconds >= 1 },
+            { id: "ticking_time", name: "Ticking Time", desc: "Accumulate 1 second of time.", icon: "⏱️", diff: "easy", req: () => game.maxSeconds.gte(1) },
             { id: "first_touch", name: "First Touch", desc: "Click the TICK TIME button once.", icon: "👆", diff: "easy", req: () => game.totalClicks >= 1 },
-            { id: "wait_a_minute", name: "Wait a Minute", desc: "Reach 1 minute (60s) of time.", icon: "⌛", diff: "easy", req: () => game.maxSeconds >= 60 },
+            { id: "wait_a_minute", name: "Wait a Minute", desc: "Reach 1 minute (60s) of time.", icon: "⌛", diff: "easy", req: () => game.maxSeconds.gte(60) },
 
             // Medium
             { id: "finger_workout", name: "Finger Workout", desc: "Click the time button 100 times.", icon: "🥊", diff: "medium", req: () => game.totalClicks >= 100 },
-            { id: "patience", name: "Pure Patience", desc: "Reach 300s (5 mins) without buying ANY upgrades!", icon: "🧘", diff: "medium", req: () => game.maxSeconds >= 300 && game.upgradesBought === 0 },
+            { id: "patience", name: "Pure Patience", desc: "Reach 300s (5 mins) without buying ANY upgrades!", icon: "🧘", diff: "medium", req: () => game.maxSeconds.gte(300) && game.upgradesBought === 0 },
             { id: "time_collector", name: "Time Collector", desc: "Own 10 total upgrades.", icon: "📦", diff: "medium", req: () => game.upgradesBought >= 10 },
 
             // Hard
-            { id: "zzz", name: "ZZZ", desc: "Reach 12 hours (43,200s) of time.", icon: "😴", diff: "hard", req: () => game.maxSeconds >= 43200 },
-            { id: "true_silence", name: "True Silence", desc: "Reach 1 Hour (3,600s) WITHOUT buying any upgrades!", icon: "🤫", diff: "hard", req: () => game.maxSeconds >= 3600 && game.upgradesBought === 0 },
+            { id: "zzz", name: "ZZZ", desc: "Reach 12 hours (43,200s) of time.", icon: "😴", diff: "hard", req: () => game.maxSeconds.gte(43200) },
+            { id: "true_silence", name: "True Silence", desc: "Reach 1 Hour (3,600s) WITHOUT buying any upgrades!", icon: "🤫", diff: "hard", req: () => game.maxSeconds.gte(3600) && game.upgradesBought === 0 },
             { id: "click_marathon", name: "Click Marathon", desc: "Click the button 1,000 times.", icon: "🏃", diff: "hard", req: () => game.totalClicks >= 1000 },
-            { id: "speed_demon", name: "Speed Demon", desc: "Reach +1,000s/sec generation.", icon: "⚡", diff: "hard", req: () => getSPS() >= 1000 },
+            { id: "speed_demon", name: "Speed Demon", desc: "Reach +1,000s/sec generation.", icon: "⚡", diff: "hard", req: () => getSPS().gte(1000) },
 
             // Extreme
             { id: "synergy_master", name: "Synergy Master", desc: "Own at least 50 total upgrades.", icon: "🔮", diff: "extreme", req: () => game.upgradesBought >= 50 },
-            { id: "trillionaire", name: "Trillionaire", desc: "Reach 1 Trillion (1,000,000,000,000s) seconds.", icon: "💎", diff: "extreme", req: () => game.maxSeconds >= 1e12 },
+            { id: "trillionaire", name: "Trillionaire", desc: "Reach 1 Trillion (1T) seconds.", icon: "💎", diff: "extreme", req: () => game.maxSeconds.gte(new BigNum(1, 12)) },
 
             // Insane
             { id: "carpal_tunnel", name: "Carpal Tunnel Paradox", desc: "Click the time button 10,000 times.", icon: "🦾", diff: "insane", req: () => game.totalClicks >= 10000 },
-            { id: "big_bang_precursor", name: "Big Bang Precursor", desc: "Reach 13.8 Billion seconds (Universify threshold!).", icon: "💥", diff: "insane", req: () => game.maxSeconds >= UNIVERSIFY_REQ },
+            { id: "big_bang_precursor", name: "Big Bang Precursor", desc: "Reach 13.8 Billion seconds (Universify threshold!).", icon: "💥", diff: "insane", req: () => game.maxSeconds.gte(UNIVERSIFY_REQ) },
             { id: "universal_architect", name: "Universal Architect", desc: "Universify for the very first time.", icon: "🌌", diff: "insane", req: () => game.universifyCount >= 1 },
 
             // Wild
             { id: "multiverse_explorer", name: "Multiverse Explorer", desc: "Universify 5 times.", icon: "🌌", diff: "wild", req: () => game.universifyCount >= 5 },
-            { id: "quadrillionaire", name: "Quadrillionaire", desc: "Reach 1 Quadrillion (1e15) seconds.", icon: "✨", diff: "wild", req: () => game.maxSeconds >= 1e15 },
+            { id: "quadrillionaire", name: "Quadrillionaire", desc: "Reach 1 Quadrillion (1Qa) seconds.", icon: "✨", diff: "wild", req: () => game.maxSeconds.gte(new BigNum(1, 15)) },
 
             // GLITCHED TIER
-            { id: "age", name: "Age", desc: "Reach 1 Year (31,536,000s) WITHOUT buying a single upgrade!", icon: "🏛️", diff: "glitched", req: () => game.maxSeconds >= 31536000 && game.upgradesBought === 0 },
+            { id: "age", name: "Age", desc: "Reach 1 Year (31,536,000s) WITHOUT buying a single upgrade!", icon: "🏛️", diff: "glitched", req: () => game.maxSeconds.gte(31536000) && game.upgradesBought === 0 },
+            { id: "googol_achieved", name: "Googol Achieved", desc: "Reach 1 Googol (1e100) total seconds!", icon: "🌀", diff: "glitched", req: () => game.maxSeconds.gte(new BigNum(1, 100)) },
+            { id: "centillionaire", name: "Centillionaire", desc: "Reach 1 Centillion (1e303) total seconds!", icon: "♾️", diff: "glitched", req: () => game.maxSeconds.gte(new BigNum(1, 303)) },
             { id: "f12_secret", name: "Hey! What are you doing!", desc: "Opened Developer Console / DevTools.", icon: "👾", diff: "glitched", secret: true, req: () => false },
-            { id: "reality_break", name: "REALITY_BREAK", desc: "Reach 1 Quintillion (1e18) total seconds.", icon: "☣️", diff: "glitched", secret: true, req: () => game.maxSeconds >= 1e18 }
+            { id: "beyond_reality", name: "Beyond Reality", desc: "Reach 1e1000 total seconds!", icon: "☣️", diff: "glitched", secret: true, req: () => game.maxSeconds.gte(new BigNum(1, 1000)) }
         ];
 
         // DOM Elements
@@ -734,74 +885,72 @@
         const universifyProgressEl = document.getElementById('universify-progress');
         const toastContainer = document.getElementById('toast-container');
 
-        // Calculate Universes Gained on Reset
+        // Calculate Pending Universes
         function getPendingUniverses() {
-            if (game.seconds < UNIVERSIFY_REQ) return 0;
-            return Math.floor(Math.sqrt(game.seconds / UNIVERSIFY_REQ));
+            if (game.seconds.lt(UNIVERSIFY_REQ)) return new BigNum(0);
+            let ratio = game.seconds.div(UNIVERSIFY_REQ);
+            return ratio.pow(0.5).floor();
         }
 
-        // Global Multipliers
+        // Global Multiplier
         function getGlobalMultiplier() {
-            let mult = 1.0;
+            let mult = new BigNum(1);
             
-            // Standard Overclock
-            mult *= Math.pow(1.5, game.upgrades.overclock.count);
+            mult = mult.mul(new BigNum(1.5).pow(game.upgrades.overclock.count));
 
-            // Synergy upgrade
             if (game.upgrades.synergy.count > 0) {
-                mult *= (1 + (game.upgradesBought * 0.02 * game.upgrades.synergy.count));
+                mult = mult.mul(new BigNum(1 + (game.upgradesBought * 0.02 * game.upgrades.synergy.count)));
             }
 
-            // Dimensional Folding (3x per count)
-            mult *= Math.pow(3, game.upgrades.dimFolding.count);
+            mult = mult.mul(new BigNum(3).pow(game.upgrades.dimFolding.count));
+            mult = mult.mul(new BigNum(10000).pow(game.upgrades.googolEngine.count));
+            mult = mult.mul(new BigNum(1, 10).pow(game.upgrades.centillionDisruptor.count));
+            mult = mult.mul(new BigNum(1, 50).pow(game.upgrades.omniverseOverdrive.count));
 
-            // Universe Base Boost (+100% per Universe, enhanced by Big Bang Ignition upgrade)
-            const uniBoostPerUnit = 1 + (game.cosmicUpgrades.bigBang.count * 1.0);
-            mult *= (1 + (game.universes * uniBoostPerUnit));
+            // Universe Boost
+            let uniBoostPerUnit = 1 + (game.cosmicUpgrades.bigBang.count * 1.0);
+            let totalUniBoost = game.universes.mul(uniBoostPerUnit).add(1);
+            mult = mult.mul(totalUniBoost);
 
             return mult;
         }
 
         function getSPS() {
-            let baseSPS = 0;
+            let baseSPS = new BigNum(0);
             for (let id in game.upgrades) {
                 if (game.upgrades[id].type === "passive") {
-                    baseSPS += game.upgrades[id].count * game.upgrades[id].power;
+                    baseSPS = baseSPS.add(game.upgrades[id].power.mul(game.upgrades[id].count));
                 }
             }
 
             let mult = getGlobalMultiplier();
 
-            // Chronos Boost
             if (game.upgrades.chronos.count > 0) {
-                mult *= (1 + (Math.sqrt(game.maxSeconds) * 0.001 * game.upgrades.chronos.count));
+                let chronosBoost = game.maxSeconds.pow(0.5).mul(0.001 * game.upgrades.chronos.count).add(1);
+                mult = mult.mul(chronosBoost);
             }
 
-            // Dark Matter Engine
-            mult *= Math.pow(5, game.cosmicUpgrades.darkMatter.count);
-
-            return baseSPS * mult;
+            mult = mult.mul(new BigNum(5).pow(game.cosmicUpgrades.darkMatter.count));
+            return baseSPS.mul(mult);
         }
 
         function getClickPower() {
-            let basePower = 1;
+            let basePower = new BigNum(1);
             for (let id in game.upgrades) {
                 if (game.upgrades[id].type === "click") {
-                    basePower += game.upgrades[id].count * game.upgrades[id].power;
+                    basePower = basePower.add(game.upgrades[id].power.mul(game.upgrades[id].count));
                 }
             }
 
             let mult = getGlobalMultiplier();
 
-            // Kinetic Momentum
             if (game.upgrades.kinetic.count > 0) {
-                mult *= (1 + (Math.log10(game.totalClicks + 1) * 0.5 * game.upgrades.kinetic.count));
+                let kineticBoost = new BigNum(1 + (Math.log10(game.totalClicks + 1) * 0.5 * game.upgrades.kinetic.count));
+                mult = mult.mul(kineticBoost);
             }
 
-            // Singularity Tap
-            mult *= Math.pow(10, game.cosmicUpgrades.singularityTap.count);
-
-            return basePower * mult;
+            mult = mult.mul(new BigNum(10).pow(game.cosmicUpgrades.singularityTap.count));
+            return basePower.mul(mult);
         }
 
         // Achievements Logic
@@ -907,7 +1056,6 @@
                 document.getElementById(`btn-${id}`).addEventListener('click', () => buyUpgrade(id));
             }
 
-            // Cosmic Upgrades
             cosmicUpgradeListEl.innerHTML = '';
             for (let id in game.cosmicUpgrades) {
                 const upg = game.cosmicUpgrades[id];
@@ -923,7 +1071,7 @@
                         <span class="upgrade-desc">${upg.desc}</span>
                     </div>
                     <button class="upgrade-btn cosmic-btn" id="cosmic-btn-${id}">
-                        ${upg.cost} 🌌
+                        ${formatNumber(upg.cost)} 🌌
                     </button>
                 `;
 
@@ -935,11 +1083,11 @@
         // Buy Standard Upgrade
         function buyUpgrade(id) {
             const upg = game.upgrades[id];
-            if (game.seconds >= upg.cost) {
-                game.seconds -= upg.cost;
+            if (game.seconds.gte(upg.cost)) {
+                game.seconds = game.seconds.sub(upg.cost);
                 upg.count++;
                 game.upgradesBought++;
-                upg.cost = Math.floor(upg.cost * (upg.type === "formula" ? 2.5 : 1.15));
+                upg.cost = upg.cost.mul(upg.type === "formula" ? 2.5 : 1.15);
                 checkAchievements();
                 updateUI();
             }
@@ -948,31 +1096,31 @@
         // Buy Cosmic Upgrade
         function buyCosmicUpgrade(id) {
             const upg = game.cosmicUpgrades[id];
-            if (game.universes >= upg.cost) {
-                game.universes -= upg.cost;
+            if (game.universes.gte(upg.cost)) {
+                game.universes = game.universes.sub(upg.cost);
                 upg.count++;
-                upg.cost = Math.floor(upg.cost * 2);
+                upg.cost = upg.cost.mul(2);
                 checkAchievements();
                 updateUI();
             }
         }
 
-        // Universify Reset Action
+        // Universify Reset
         function universifyReset() {
             const pending = getPendingUniverses();
-            if (pending < 1) return;
+            if (pending.lt(1)) return;
 
-            if (confirm(`Collapse the universe for +${pending} Universes? This resets your seconds and normal upgrades!`)) {
-                game.universes += pending;
+            if (confirm(`Collapse the universe for +${formatNumber(pending)} Universes? This resets your seconds and normal upgrades!`)) {
+                game.universes = game.universes.add(pending);
                 game.universifyCount++;
-                game.seconds = 0;
+                game.seconds = new BigNum(0);
                 game.upgradesBought = 0;
 
-                // Reset standard upgrades
                 const baseCosts = {
-                    watch: 15, gear: 100, pointer: 800, glove: 5000, dilationTap: 50000, tachyonBeam: 500000, bigRipClicker: 1e9,
-                    hourglass: 20, grandfather: 150, atomic: 1200, timemachine: 10000, wormhole: 100000, singularity: 1000000, multiverseGen: 5e8,
-                    overclock: 500, kinetic: 2500, synergy: 15000, chronos: 75000, dimFolding: 1e10
+                    watch: new BigNum(15), gear: new BigNum(100), pointer: new BigNum(800), glove: new BigNum(5000), dilationTap: new BigNum(50000), tachyonBeam: new BigNum(500000), bigRipClicker: new BigNum(1, 9),
+                    hourglass: new BigNum(20), grandfather: new BigNum(150), atomic: new BigNum(1200), timemachine: new BigNum(10000), wormhole: new BigNum(100000), singularity: new BigNum(1, 6), multiverseGen: new BigNum(5, 8),
+                    overclock: new BigNum(500), kinetic: new BigNum(2500), synergy: new BigNum(15000), chronos: new BigNum(75000), dimFolding: new BigNum(1, 10),
+                    googolEngine: new BigNum(1, 100), centillionDisruptor: new BigNum(1, 303), omniverseOverdrive: new BigNum(1, 1000)
                 };
 
                 for (let id in game.upgrades) {
@@ -991,8 +1139,8 @@
         // Click Action
         clickBtn.addEventListener('click', (e) => {
             const addedSeconds = getClickPower();
-            game.seconds += addedSeconds;
-            game.maxSeconds += addedSeconds;
+            game.seconds = game.seconds.add(addedSeconds);
+            game.maxSeconds = game.maxSeconds.add(addedSeconds);
             game.totalClicks++;
 
             const text = document.createElement('div');
@@ -1022,27 +1170,32 @@
             clicksEl.textContent = formatNumber(game.totalClicks);
             universesEl.textContent = formatNumber(game.universes);
 
-            // Progress towards Universify
-            const progress = Math.min(100, (game.seconds / UNIVERSIFY_REQ) * 100);
+            // Progress Bar
+            let progress = 0;
+            if (game.seconds.gte(UNIVERSIFY_REQ)) {
+                progress = 100;
+            } else {
+                progress = Math.min(100, (game.seconds.toNumber() / UNIVERSIFY_REQ.toNumber()) * 100);
+            }
             universifyProgressEl.style.width = `${progress}%`;
 
             const pending = getPendingUniverses();
-            universifyGainEl.textContent = `+${pending} Universes`;
+            universifyGainEl.textContent = `+${formatNumber(pending)} Universes`;
 
-            if (game.seconds >= UNIVERSIFY_REQ) {
+            if (game.seconds.gte(UNIVERSIFY_REQ)) {
                 universifyBtn.disabled = false;
-                universifyBtn.textContent = `🌌 UNIVERSIFY (+${pending} Universes)`;
+                universifyBtn.textContent = `🌌 UNIVERSIFY (+${formatNumber(pending)} Universes)`;
             } else {
                 universifyBtn.disabled = true;
                 universifyBtn.textContent = `🌌 UNIVERSIFY (${progress.toFixed(1)}%)`;
             }
 
-            // Standard Upgrades
+            // Upgrades
             for (let id in game.upgrades) {
                 const upg = game.upgrades[id];
                 const btn = document.getElementById(`btn-${id}`);
                 if (btn) {
-                    btn.disabled = game.seconds < upg.cost;
+                    btn.disabled = game.seconds.lt(upg.cost);
                     btn.innerHTML = `${formatNumber(upg.cost)}s`;
                     const nameEl = btn.parentElement.querySelector('.upgrade-name');
                     nameEl.childNodes[0].textContent = `${upg.name} (${upg.count}) `;
@@ -1054,8 +1207,8 @@
                 const upg = game.cosmicUpgrades[id];
                 const btn = document.getElementById(`cosmic-btn-${id}`);
                 if (btn) {
-                    btn.disabled = game.universes < upg.cost;
-                    btn.innerHTML = `${upg.cost} 🌌`;
+                    btn.disabled = game.universes.lt(upg.cost);
+                    btn.innerHTML = `${formatNumber(upg.cost)} 🌌`;
                     const nameEl = btn.parentElement.querySelector('.upgrade-name');
                     nameEl.childNodes[0].textContent = `${upg.name} (${upg.count}) `;
                 }
@@ -1068,9 +1221,9 @@
             const delta = (now - game.lastTick) / 1000;
             game.lastTick = now;
 
-            const gained = getSPS() * delta;
-            game.seconds += gained;
-            game.maxSeconds += gained;
+            const gained = getSPS().mul(delta);
+            game.seconds = game.seconds.add(gained);
+            game.maxSeconds = game.maxSeconds.add(gained);
 
             checkAchievements();
             updateUI();
@@ -1092,6 +1245,13 @@
         setInterval(() => { console.log('%c', element); }, 2000);
 
         // Save & Load
+        function parseBigNum(obj) {
+            if (!obj) return new BigNum(0);
+            if (obj instanceof BigNum) return obj;
+            if (typeof obj === 'number') return new BigNum(obj);
+            return new BigNum(obj.m || 0, obj.e || 0);
+        }
+
         function saveGame() {
             localStorage.setItem('timeClickerSave', JSON.stringify(game));
         }
@@ -1101,11 +1261,11 @@
             if (saved) {
                 const loaded = JSON.parse(saved);
                 
-                game.seconds = loaded.seconds || 0;
-                game.maxSeconds = loaded.maxSeconds || game.seconds;
+                game.seconds = parseBigNum(loaded.seconds);
+                game.maxSeconds = parseBigNum(loaded.maxSeconds);
+                game.universes = parseBigNum(loaded.universes);
                 game.totalClicks = loaded.totalClicks || 0;
                 game.upgradesBought = loaded.upgradesBought || 0;
-                game.universes = loaded.universes || 0;
                 game.universifyCount = loaded.universifyCount || 0;
                 game.lastTick = Date.now();
                 game.unlockedAchievements = loaded.unlockedAchievements || {};
@@ -1114,7 +1274,7 @@
                     for (let id in loaded.upgrades) {
                         if (game.upgrades[id]) {
                             game.upgrades[id].count = loaded.upgrades[id].count || 0;
-                            game.upgrades[id].cost = loaded.upgrades[id].cost || game.upgrades[id].cost;
+                            game.upgrades[id].cost = parseBigNum(loaded.upgrades[id].cost);
                         }
                     }
                 }
@@ -1123,7 +1283,7 @@
                     for (let id in loaded.cosmicUpgrades) {
                         if (game.cosmicUpgrades[id]) {
                             game.cosmicUpgrades[id].count = loaded.cosmicUpgrades[id].count || 0;
-                            game.cosmicUpgrades[id].cost = loaded.cosmicUpgrades[id].cost || game.cosmicUpgrades[id].cost;
+                            game.cosmicUpgrades[id].cost = parseBigNum(loaded.cosmicUpgrades[id].cost);
                         }
                     }
                 }
