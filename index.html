@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Clicker - Console Edit Fixed</title>
+    <title>Time Clicker - Fixed Save Costs</title>
     <style>
         :root {
             --bg-color: #060911;
@@ -827,6 +827,18 @@
 
         const UNIVERSIFY_REQ = new BigNum(1.38, 10); // 13.8 Billion Seconds
 
+        // Default Base Costs
+        const BASE_UPGRADE_COSTS = {
+            watch: new BigNum(15), gear: new BigNum(100), pointer: new BigNum(800), glove: new BigNum(5000), dilationTap: new BigNum(50000), tachyonBeam: new BigNum(500000), bigRipClicker: new BigNum(1, 9),
+            hourglass: new BigNum(20), grandfather: new BigNum(150), atomic: new BigNum(1200), timemachine: new BigNum(10000), wormhole: new BigNum(100000), singularity: new BigNum(1, 6), multiverseGen: new BigNum(5, 8),
+            overclock: new BigNum(500), kinetic: new BigNum(2500), synergy: new BigNum(15000), chronos: new BigNum(75000), dimFolding: new BigNum(1, 10),
+            googolEngine: new BigNum(1, 100), centillionDisruptor: new BigNum(1, 303), omniverseOverdrive: new BigNum(1, 1000)
+        };
+
+        const BASE_COSMIC_COSTS = {
+            bigBang: new BigNum(1), darkMatter: new BigNum(3), singularityTap: new BigNum(5)
+        };
+
         // -------------------------------------------------------------
         // Game State
         // -------------------------------------------------------------
@@ -855,14 +867,12 @@
                 singularity: { name: "Singularity Core", cost: new BigNum(1, 6), power: new BigNum(6, 4), type: "passive", count: 0, desc: "+60,000s per sec" },
                 multiverseGen: { name: "Multiverse Generator", cost: new BigNum(5, 8), power: new BigNum(2.5, 7), type: "passive", count: 0, desc: "+25,000,000s per sec" },
 
-                // Formula Upgrades
                 overclock: { name: "Overclocked Escapement", cost: new BigNum(500), type: "formula", count: 0, desc: "Multiplies ALL time gains by 1.5x" },
                 kinetic: { name: "Kinetic Momentum", cost: new BigNum(2500), type: "formula", count: 0, desc: "Boosts Click Power based on total clicks" },
                 synergy: { name: "Temporal Synergizer", cost: new BigNum(15000), type: "formula", count: 0, desc: "+2% global speed per upgrade owned" },
                 chronos: { name: "Chronos Formula", cost: new BigNum(75000), type: "formula", count: 0, desc: "Boosts passive speed based on lifetime time" },
                 dimFolding: { name: "Dimensional Folding", cost: new BigNum(1, 10), type: "formula", count: 0, desc: "Triples total time generation!" },
 
-                // Googology High-Tier Upgrades
                 googolEngine: { name: "Googol Engine", cost: new BigNum(1, 100), type: "formula", count: 0, desc: "Googol power! Multiplies time generation by 10,000x!" },
                 centillionDisruptor: { name: "Centillion Disruptor", cost: new BigNum(1, 303), type: "formula", count: 0, desc: "Centillion power! Multiplies time generation by 1e10x!" },
                 omniverseOverdrive: { name: "Omniverse Overdrive", cost: new BigNum(1, 1000), type: "formula", count: 0, desc: "Beyond reality! Multiplies time generation by 1e50x!" }
@@ -933,7 +943,6 @@
         const universifyProgressEl = document.getElementById('universify-progress');
         const toastContainer = document.getElementById('toast-container');
 
-        // Ensure state variables stay BigNum instances (fixes console editing)
         function sanitizeState() {
             game.seconds = BigNum.from(game.seconds);
             game.maxSeconds = BigNum.from(game.maxSeconds);
@@ -1174,16 +1183,9 @@
                 game.seconds = new BigNum(0);
                 game.upgradesBought = 0;
 
-                const baseCosts = {
-                    watch: new BigNum(15), gear: new BigNum(100), pointer: new BigNum(800), glove: new BigNum(5000), dilationTap: new BigNum(50000), tachyonBeam: new BigNum(500000), bigRipClicker: new BigNum(1, 9),
-                    hourglass: new BigNum(20), grandfather: new BigNum(150), atomic: new BigNum(1200), timemachine: new BigNum(10000), wormhole: new BigNum(100000), singularity: new BigNum(1, 6), multiverseGen: new BigNum(5, 8),
-                    overclock: new BigNum(500), kinetic: new BigNum(2500), synergy: new BigNum(15000), chronos: new BigNum(75000), dimFolding: new BigNum(1, 10),
-                    googolEngine: new BigNum(1, 100), centillionDisruptor: new BigNum(1, 303), omniverseOverdrive: new BigNum(1, 1000)
-                };
-
                 for (let id in game.upgrades) {
                     game.upgrades[id].count = 0;
-                    game.upgrades[id].cost = baseCosts[id] || game.upgrades[id].cost;
+                    game.upgrades[id].cost = BASE_UPGRADE_COSTS[id] || game.upgrades[id].cost;
                 }
 
                 checkAchievements();
@@ -1306,9 +1308,7 @@
         });
         setInterval(() => { console.log('%c', element); }, 2000);
 
-        // -------------------------------------------------------------
         // Developer Console Cheat Helpers
-        // -------------------------------------------------------------
         window.setSeconds = function(val) {
             game.seconds = BigNum.from(val);
             game.maxSeconds = BigNum.from(val);
@@ -1334,6 +1334,21 @@
             ACHIEVEMENTS.forEach(ach => unlockAchievement(ach.id));
             console.log("All achievements unlocked!");
         };
+
+        // Recalculate upgrade costs from count to prevent corrupt saves
+        function recalculateCosts() {
+            for (let id in game.upgrades) {
+                let upg = game.upgrades[id];
+                let base = BASE_UPGRADE_COSTS[id];
+                let mult = upg.type === "formula" ? 2.5 : 1.15;
+                upg.cost = base.mul(new BigNum(mult).pow(upg.count));
+            }
+            for (let id in game.cosmicUpgrades) {
+                let upg = game.cosmicUpgrades[id];
+                let base = BASE_COSMIC_COSTS[id];
+                upg.cost = base.mul(new BigNum(2).pow(upg.count));
+            }
+        }
 
         // Safe Save & Load
         function parseBigNum(obj) {
@@ -1371,9 +1386,6 @@
                         for (let id in loaded.upgrades) {
                             if (game.upgrades[id]) {
                                 game.upgrades[id].count = loaded.upgrades[id].count || 0;
-                                if (loaded.upgrades[id].cost) {
-                                    game.upgrades[id].cost = parseBigNum(loaded.upgrades[id].cost);
-                                }
                             }
                         }
                     }
@@ -1382,12 +1394,11 @@
                         for (let id in loaded.cosmicUpgrades) {
                             if (game.cosmicUpgrades[id]) {
                                 game.cosmicUpgrades[id].count = loaded.cosmicUpgrades[id].count || 0;
-                                if (loaded.cosmicUpgrades[id].cost) {
-                                    game.cosmicUpgrades[id].cost = parseBigNum(loaded.cosmicUpgrades[id].cost);
-                                }
                             }
                         }
                     }
+
+                    recalculateCosts();
                 }
             } catch (err) {
                 console.error("Recovered from save error:", err);
