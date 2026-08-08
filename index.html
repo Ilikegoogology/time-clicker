@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Clicker - Micrillion Update</title>
+    <title>Time Clicker - e0 String Bug Fix</title>
     <style>
         :root {
             --bg-color: #060911;
@@ -795,7 +795,8 @@
                 let val = blocks[b];
                 if (val > 0) {
                     let prefix = getSubPrefix(val, true);
-                    let tier = TIER_NAMES[b] || ("e" + (b * 3));
+                    // Fixed Bug: Properly check bounds so tier 0 doesn't trigger "e0" fallback!
+                    let tier = (b < TIER_NAMES.length) ? TIER_NAMES[b] : ("e" + (b * 3));
                     parts.push(prefix + tier);
                 }
             }
