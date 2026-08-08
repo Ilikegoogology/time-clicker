@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Clicker - Ellipsis & Full Label</title>
+    <title>Time Clicker - 1-999 Googology Progression</title>
     <style>
         :root {
             --bg-color: #060911;
@@ -94,22 +94,22 @@
             width: 100%;
         }
 
-        /* Truncated main display */
+        /* Dynamic fluid font size for full 1-to-999 display */
         .seconds-total {
-            font-size: 2.8rem;
+            font-size: clamp(1.8rem, 4.5vw, 2.8rem);
             font-weight: bold;
             color: var(--accent-color);
             margin: 10px 0 2px 0;
             word-break: break-all;
+            line-height: 1.1;
         }
 
-        /* New Full Name Label underneath */
         .seconds-full-name {
             font-size: 0.8rem;
             color: var(--subtext-color);
             margin-bottom: 12px;
             word-break: break-all;
-            max-width: 90%;
+            max-width: 95%;
             opacity: 0.85;
             font-family: monospace;
             background: rgba(0,0,0,0.25);
@@ -842,9 +842,9 @@
             let prefix = getGoogologyPrefix(i);
             let fullString = mantissa.toFixed(2) + prefix;
 
-            // Shorten with ellipsis if requested and longer than 18 chars
-            if (!fullLength && fullString.length > 18) {
-                return fullString.substring(0, 15) + "...";
+            // Expanded capacity (up to 32 characters) so 1-999 prefixes never get sliced off mid-word!
+            if (!fullLength && fullString.length > 32) {
+                return fullString.substring(0, 28) + "...";
             }
 
             return fullString;
