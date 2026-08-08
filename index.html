@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Clicker - 1-999 Googology Progression</title>
+    <title>Time Clicker - Seamless Magnitude Advance Fix</title>
     <style>
         :root {
             --bg-color: #060911;
@@ -34,6 +34,12 @@
             user-select: none;
         }
 
+        html, body {
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
@@ -61,6 +67,7 @@
             gap: 20px;
             width: 100%;
             max-width: 1100px;
+            min-width: 0;
         }
 
         @media (min-width: 900px) {
@@ -81,6 +88,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-width: 0;
+            width: 100%;
+            overflow: hidden;
         }
 
         .card-cosmic {
@@ -92,30 +102,37 @@
         .time-display {
             text-align: center;
             width: 100%;
+            min-width: 0;
         }
 
-        /* Dynamic fluid font size for full 1-to-999 display */
         .seconds-total {
-            font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+            font-size: clamp(1.6rem, 4vw, 2.8rem);
             font-weight: bold;
             color: var(--accent-color);
             margin: 10px 0 2px 0;
-            word-break: break-all;
-            line-height: 1.1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            width: 100%;
         }
 
         .seconds-full-name {
             font-size: 0.8rem;
             color: var(--subtext-color);
             margin-bottom: 12px;
-            word-break: break-all;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             max-width: 95%;
+            width: 95%;
             opacity: 0.85;
             font-family: monospace;
             background: rgba(0,0,0,0.25);
             padding: 4px 10px;
             border-radius: 4px;
             border: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
         }
 
         .time-formatted {
@@ -125,6 +142,10 @@
             background: rgba(0,0,0,0.3);
             padding: 8px 12px;
             border-radius: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
         }
 
         .stats-grid {
@@ -135,12 +156,15 @@
             margin-top: 10px;
             text-align: center;
             font-size: 0.8rem;
+            min-width: 0;
         }
 
         .stat-box {
             background: rgba(0, 0, 0, 0.35);
             padding: 8px 4px;
             border-radius: 8px;
+            min-width: 0;
+            overflow: hidden;
         }
 
         .stat-value {
@@ -148,6 +172,9 @@
             color: var(--accent-color);
             font-size: 0.9rem;
             margin-top: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .stat-value.cosmic { color: #c084fc; }
@@ -269,12 +296,15 @@
             padding: 10px 14px;
             border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.05);
+            min-width: 0;
         }
 
         .upgrade-info {
             display: flex;
             flex-direction: column;
             max-width: 65%;
+            min-width: 0;
+            overflow: hidden;
         }
 
         .upgrade-name {
@@ -283,12 +313,18 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .upgrade-desc {
             font-size: 0.78rem;
             color: var(--subtext-color);
             margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .badge {
@@ -297,6 +333,7 @@
             border-radius: 4px;
             font-weight: bold;
             text-transform: uppercase;
+            flex-shrink: 0;
         }
 
         .badge-click { background: rgba(0, 240, 255, 0.2); color: var(--accent-color); }
@@ -315,6 +352,7 @@
             cursor: pointer;
             transition: background 0.2s;
             white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .upgrade-btn.cosmic-btn {
@@ -334,6 +372,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 12px;
+            min-width: 0;
         }
 
         .achievement-card {
@@ -348,6 +387,7 @@
             transition: all 0.3s;
             position: relative;
             overflow: hidden;
+            min-width: 0;
         }
 
         .achievement-card.unlocked {
@@ -356,12 +396,13 @@
             background: rgba(255, 215, 0, 0.03);
         }
 
-        .achievement-icon { font-size: 2rem; }
+        .achievement-icon { font-size: 2rem; flex-shrink: 0; }
 
         .achievement-details {
             display: flex;
             flex-direction: column;
             width: 100%;
+            min-width: 0;
         }
 
         .achievement-header {
@@ -375,10 +416,19 @@
             font-weight: bold;
             font-size: 0.9rem;
             color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .achievement-card.unlocked .achievement-title { color: var(--gold-color); }
-        .achievement-desc { font-size: 0.75rem; color: var(--subtext-color); }
+        .achievement-desc {
+            font-size: 0.75rem;
+            color: var(--subtext-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
         .diff-tag {
             font-size: 0.6rem;
@@ -386,6 +436,7 @@
             border-radius: 4px;
             font-weight: bold;
             text-transform: uppercase;
+            flex-shrink: 0;
         }
 
         .diff-easy { background: var(--diff-easy); color: #000; }
@@ -516,7 +567,7 @@
             <!-- Shortened main display -->
             <div class="seconds-total" id="seconds-display">0s</div>
             <!-- Full unabbreviated Googological name label -->
-            <div class="seconds-full-name" id="seconds-full-display">Full: 0s</div>
+            <div class="seconds-full-name" id="seconds-full-display" title="0s">Full: 0s</div>
             <div class="time-formatted" id="time-formatted-display">0m 0s</div>
 
             <div class="click-area">
@@ -651,11 +702,19 @@
                     this.e = 0;
                     return;
                 }
+
+                // Snap floating point precision errors near magnitude boundaries (e.g. 9.99999999999999 -> 1.0 * 10^(e+1))
                 let absM = Math.abs(this.m);
-                if (absM >= 10 || absM < 1) {
-                    let shift = Math.floor(Math.log10(absM));
+                let shift = Math.floor(Math.log10(absM) + 1e-12);
+                
+                if (shift !== 0) {
                     this.m = this.m / Math.pow(10, shift);
                     this.e += shift;
+                }
+
+                if (Math.abs(this.m) >= 9.9999999999999) {
+                    this.m = 1;
+                    this.e += 1;
                 }
             }
 
@@ -722,7 +781,8 @@
                 if (exp === 0) return new BigNum(1, 0);
 
                 let totalE = exp * (this.e + Math.log10(Math.abs(this.m)));
-                let newE = Math.floor(totalE);
+                // Add 1e-12 precision snapping to prevent flooring 2.9999999999999996 down to 2!
+                let newE = Math.floor(totalE + 1e-12);
                 let frac = totalE - newE;
                 let newM = Math.pow(10, frac);
 
@@ -821,10 +881,21 @@
             return parts.join("");
         }
 
-        // Format number helper (fullLength = true returns untruncated string)
+        // Format number helper (Seamless Magnitude Advance Protection)
         function formatNumber(val, fullLength = false) {
             let num = BigNum.from(val);
             if (num.m === 0) return "0";
+
+            let rem = num.e % 3;
+            let mantissa = num.m * Math.pow(10, rem);
+
+            // Auto-advance magnitude if mantissa rounds to 1000.00 (e.g. 999.9999)
+            if (mantissa >= 999.995) {
+                mantissa /= 1000;
+                num.e += 3;
+                rem = num.e % 3;
+                mantissa = num.m * Math.pow(10, rem);
+            }
 
             if (num.e < 3) {
                 let v = num.toNumber();
@@ -832,8 +903,6 @@
             }
 
             let i = Math.floor(num.e / 3);
-            let rem = num.e % 3;
-            let mantissa = num.m * Math.pow(10, rem);
 
             if (num.e >= 3e33) {
                 return mantissa.toFixed(2) + "e" + num.e;
@@ -842,7 +911,7 @@
             let prefix = getGoogologyPrefix(i);
             let fullString = mantissa.toFixed(2) + prefix;
 
-            // Expanded capacity (up to 32 characters) so 1-999 prefixes never get sliced off mid-word!
+            // Extended capacity (32 chars) so long 1-999 prefixes display without truncation
             if (!fullLength && fullString.length > 32) {
                 return fullString.substring(0, 28) + "...";
             }
@@ -1308,8 +1377,11 @@
             sanitizeState();
             // Shortened with ellipsis on main display
             secondsEl.textContent = `${formatNumber(game.seconds, false)}s`;
-            // Unabbreviated full Googology name in label underneath
-            secondsFullEl.textContent = `Full: ${formatNumber(game.seconds, true)} seconds`;
+            
+            // Unabbreviated full Googology name in label underneath + native hover tooltip
+            let fullText = formatNumber(game.seconds, true);
+            secondsFullEl.textContent = `Full: ${fullText} seconds`;
+            secondsFullEl.title = `${fullText} seconds`;
 
             formattedEl.textContent = formatTimeReadable(game.seconds);
             spcEl.textContent = `+${formatNumber(getClickPower())}s`;
