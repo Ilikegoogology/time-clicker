@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Clicker - Femtillion Update</title>
+    <title>Time Clicker - Nanillion Abbreviation Fix</title>
     <style>
         :root {
             --bg-color: #060911;
@@ -816,7 +816,8 @@
             let rem = num.e % 3;
             let mantissa = num.m * Math.pow(10, rem);
 
-            if (num.e >= 300000000) {
+            // Extended limit up to 3e33 so Nanillion, Picillion, Femtillion display as prefixes!
+            if (num.e >= 3e33) {
                 return mantissa.toFixed(2) + "e" + num.e;
             }
 
