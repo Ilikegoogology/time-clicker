@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Clicker - Clean Googology Display</title>
+    <title>Time Clicker - Full Precision Googology</title>
     <style>
         :root {
             --bg-color: #060911;
@@ -746,7 +746,7 @@
         }
 
         // -------------------------------------------------------------
-        // Clean Googology Prefix Generator
+        // Full Precision Compound Googology Short Scale System
         // -------------------------------------------------------------
         function getSubPrefix(val, isBlockLeading = false) {
             if (val === 0) return "";
@@ -777,17 +777,29 @@
 
             let n = i - 1;
             if (n < 1000) {
-                return getSubPrefix(n);
+                return getSubPrefix(n, false);
             }
 
             const TIER_NAMES = ["", "Mill", "Micr", "Nan", "Pic", "Femt", "Att", "Zept", "Yoct", "Ront", "Quect"];
             
-            let b = Math.floor(Math.log10(n) / 3);
-            let val = Math.floor(n / Math.pow(10, b * 3)) % 1000;
-            let prefix = getSubPrefix(val, true);
-            let tier = (b < TIER_NAMES.length) ? TIER_NAMES[b] : ("e" + (b * 3));
+            let blocks = [];
+            let temp = n;
+            while (temp > 0) {
+                blocks.push(temp % 1000);
+                temp = Math.floor(temp / 1000);
+            }
 
-            return prefix + tier;
+            let parts = [];
+            for (let b = blocks.length - 1; b >= 0; b--) {
+                let val = blocks[b];
+                if (val > 0) {
+                    let prefix = getSubPrefix(val, b > 0);
+                    let tier = (b < TIER_NAMES.length) ? TIER_NAMES[b] : ("e" + (b * 3));
+                    parts.push(prefix + tier);
+                }
+            }
+
+            return parts.join("");
         }
 
         function formatNumber(val) {
