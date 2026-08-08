@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Clicker - Nanillion Abbreviation Fix</title>
+    <title>Time Clicker - Clean Googology Display</title>
     <style>
         :root {
             --bg-color: #060911;
@@ -746,7 +746,7 @@
         }
 
         // -------------------------------------------------------------
-        // Block-Based Googology Short Scale System
+        // Clean Googology Prefix Generator
         // -------------------------------------------------------------
         function getSubPrefix(val, isBlockLeading = false) {
             if (val === 0) return "";
@@ -780,27 +780,14 @@
                 return getSubPrefix(n);
             }
 
-            // SI/Latin derived Googology Illion Block Names
             const TIER_NAMES = ["", "Mill", "Micr", "Nan", "Pic", "Femt", "Att", "Zept", "Yoct", "Ront", "Quect"];
             
-            let blocks = [];
-            let temp = n;
-            while (temp > 0) {
-                blocks.push(temp % 1000);
-                temp = Math.floor(temp / 1000);
-            }
+            let b = Math.floor(Math.log10(n) / 3);
+            let val = Math.floor(n / Math.pow(10, b * 3)) % 1000;
+            let prefix = getSubPrefix(val, true);
+            let tier = (b < TIER_NAMES.length) ? TIER_NAMES[b] : ("e" + (b * 3));
 
-            let parts = [];
-            for (let b = blocks.length - 1; b >= 0; b--) {
-                let val = blocks[b];
-                if (val > 0) {
-                    let prefix = getSubPrefix(val, true);
-                    let tier = (b < TIER_NAMES.length) ? TIER_NAMES[b] : ("e" + (b * 3));
-                    parts.push(prefix + tier);
-                }
-            }
-
-            return parts.join("");
+            return prefix + tier;
         }
 
         function formatNumber(val) {
@@ -816,7 +803,6 @@
             let rem = num.e % 3;
             let mantissa = num.m * Math.pow(10, rem);
 
-            // Extended limit up to 3e33 so Nanillion, Picillion, Femtillion display as prefixes!
             if (num.e >= 3e33) {
                 return mantissa.toFixed(2) + "e" + num.e;
             }
