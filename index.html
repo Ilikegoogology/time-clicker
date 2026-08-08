@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Clicker - e0 String Bug Fix</title>
+    <title>Time Clicker - Femtillion Update</title>
     <style>
         :root {
             --bg-color: #060911;
@@ -780,7 +780,7 @@
                 return getSubPrefix(n);
             }
 
-            // Standard SI-derived Googology Illion Block Names
+            // SI/Latin derived Googology Illion Block Names
             const TIER_NAMES = ["", "Mill", "Micr", "Nan", "Pic", "Femt", "Att", "Zept", "Yoct", "Ront", "Quect"];
             
             let blocks = [];
@@ -795,7 +795,6 @@
                 let val = blocks[b];
                 if (val > 0) {
                     let prefix = getSubPrefix(val, true);
-                    // Fixed Bug: Properly check bounds so tier 0 doesn't trigger "e0" fallback!
                     let tier = (b < TIER_NAMES.length) ? TIER_NAMES[b] : ("e" + (b * 3));
                     parts.push(prefix + tier);
                 }
@@ -858,17 +857,21 @@
             watch: new BigNum(15), gear: new BigNum(100), pointer: new BigNum(800), glove: new BigNum(5000), dilationTap: new BigNum(50000), tachyonBeam: new BigNum(500000), bigRipClicker: new BigNum(1, 9),
             hourglass: new BigNum(20), grandfather: new BigNum(150), atomic: new BigNum(1200), timemachine: new BigNum(10000), wormhole: new BigNum(100000), singularity: new BigNum(1, 6), multiverseGen: new BigNum(5, 8),
             overclock: new BigNum(500), kinetic: new BigNum(2500), synergy: new BigNum(15000), chronos: new BigNum(75000), dimFolding: new BigNum(1, 10),
-            googolEngine: new BigNum(1, 100), centillionDisruptor: new BigNum(1, 303), omniverseOverdrive: new BigNum(1, 1000), micrillionCatalyst: new BigNum(1, 3000003)
+            googolEngine: new BigNum(1, 100), centillionDisruptor: new BigNum(1, 303), omniverseOverdrive: new BigNum(1, 1000), micrillionCatalyst: new BigNum(1, 3000003),
+            nanillionAccelerator: new BigNum(1, 3000000003), picillionOverload: new BigNum(1, 3000000000003), femtillionSingularity: new BigNum(1, 3000000000000003)
         };
 
         const BASE_COST_SCALES = {
             watch: new BigNum(1.15), gear: new BigNum(1.15), pointer: new BigNum(1.15), glove: new BigNum(1.15), dilationTap: new BigNum(1.2), tachyonBeam: new BigNum(1.25), bigRipClicker: new BigNum(1.5),
             hourglass: new BigNum(1.15), grandfather: new BigNum(1.15), atomic: new BigNum(1.15), timemachine: new BigNum(1.15), wormhole: new BigNum(1.2), singularity: new BigNum(1.3), multiverseGen: new BigNum(1.5),
             overclock: new BigNum(2.0), kinetic: new BigNum(3.0), synergy: new BigNum(5.0), chronos: new BigNum(10.0), dimFolding: new BigNum(100.0),
-            googolEngine: new BigNum(1, 15),       // Cost multiplies by 1e15x per level
-            centillionDisruptor: new BigNum(1, 20),// Cost multiplies by 1e20x per level
-            omniverseOverdrive: new BigNum(1, 100), // Cost multiplies by 1e100x per level
-            micrillionCatalyst: new BigNum(1, 1000) // Cost multiplies by 1e1000x per level
+            googolEngine: new BigNum(1, 15),
+            centillionDisruptor: new BigNum(1, 20),
+            omniverseOverdrive: new BigNum(1, 100),
+            micrillionCatalyst: new BigNum(1, 1000),
+            nanillionAccelerator: new BigNum(1, 10000),
+            picillionOverload: new BigNum(1, 50000),
+            femtillionSingularity: new BigNum(1, 200000)
         };
 
         const BASE_COSMIC_COSTS = {
@@ -912,7 +915,10 @@
                 googolEngine: { name: "Googol Engine", cost: new BigNum(1, 100), type: "formula", count: 0, desc: "Googol power! Multiplies time generation by 10,000x!" },
                 centillionDisruptor: { name: "Centillion Disruptor", cost: new BigNum(1, 303), type: "formula", count: 0, desc: "Centillion power! Multiplies time generation by 1e10x!" },
                 omniverseOverdrive: { name: "Omniverse Overdrive", cost: new BigNum(1, 1000), type: "formula", count: 0, desc: "Beyond reality! Multiplies time generation by 1e50x!" },
-                micrillionCatalyst: { name: "Micrillion Catalyst", cost: new BigNum(1, 3000003), type: "formula", count: 0, desc: "Micrillion power! Multiplies time generation by 1e100x!" }
+                micrillionCatalyst: { name: "Micrillion Catalyst", cost: new BigNum(1, 3000003), type: "formula", count: 0, desc: "Micrillion power! Multiplies time generation by 1e100x!" },
+                nanillionAccelerator: { name: "Nanillion Accelerator", cost: new BigNum(1, 3000000003), type: "formula", count: 0, desc: "Nanillion power! Multiplies time generation by 1e500x!" },
+                picillionOverload: { name: "Picillion Overload", cost: new BigNum(1, 3000000000003), type: "formula", count: 0, desc: "Picillion power! Multiplies time generation by 1e2,000x!" },
+                femtillionSingularity: { name: "Femtillion Singularity", cost: new BigNum(1, 3000000000000003), type: "formula", count: 0, desc: "Femtillion power! Multiplies time generation by 1e10,000x!" }
             },
             cosmicUpgrades: {
                 bigBang: { name: "Big Bang Ignition", cost: new BigNum(1), count: 0, desc: "Each Universe gives +100% additional speed boost!" },
@@ -960,6 +966,9 @@
             { id: "googol_achieved", name: "Googol Achieved", desc: "Reach 1 Googol (1e100) total seconds!", icon: "🌀", diff: "glitched", req: () => game.maxSeconds.gte(new BigNum(1, 100)) },
             { id: "centillionaire", name: "Centillionaire", desc: "Reach 1 Centillion (1e303) total seconds!", icon: "♾️", diff: "glitched", req: () => game.maxSeconds.gte(new BigNum(1, 303)) },
             { id: "micrillionaire", name: "Micrillionaire", desc: "Reach 1 Micrillion (1e3,000,003) total seconds!", icon: "🔬", diff: "glitched", req: () => game.maxSeconds.gte(new BigNum(1, 3000003)) },
+            { id: "nanillionaire", name: "Nanillionaire", desc: "Reach 1 Nanillion (1e3,000,000,003) total seconds!", icon: "⚡", diff: "glitched", req: () => game.maxSeconds.gte(new BigNum(1, 3000000003)) },
+            { id: "picillionaire", name: "Picillionaire", desc: "Reach 1 Picillion (1e3,000,000,000,003) total seconds!", icon: "🔮", diff: "glitched", req: () => game.maxSeconds.gte(new BigNum(1, 3000000000003)) },
+            { id: "femtillionaire", name: "Femtillionaire", desc: "Reach 1 Femtillion (1e3,000,000,000,000,003) total seconds!", icon: "🌌", diff: "glitched", req: () => game.maxSeconds.gte(new BigNum(1, 3000000000000003)) },
             { id: "f12_secret", name: "Hey! What are you doing!", desc: "Opened Developer Console / DevTools.", icon: "👾", diff: "glitched", secret: true, req: () => false },
             { id: "beyond_reality", name: "Beyond Reality", desc: "Reach 1e1000 total seconds!", icon: "☣️", diff: "glitched", secret: true, req: () => game.maxSeconds.gte(new BigNum(1, 1000)) }
         ];
@@ -1009,6 +1018,9 @@
             mult = mult.mul(new BigNum(1, 10).pow(game.upgrades.centillionDisruptor.count));
             mult = mult.mul(new BigNum(1, 50).pow(game.upgrades.omniverseOverdrive.count));
             mult = mult.mul(new BigNum(1, 100).pow(game.upgrades.micrillionCatalyst.count));
+            mult = mult.mul(new BigNum(1, 500).pow(game.upgrades.nanillionAccelerator.count));
+            mult = mult.mul(new BigNum(1, 2000).pow(game.upgrades.picillionOverload.count));
+            mult = mult.mul(new BigNum(1, 10000).pow(game.upgrades.femtillionSingularity.count));
 
             // Universe Boost
             let uniBoostPerUnit = 1 + (game.cosmicUpgrades.bigBang.count * 1.0);
