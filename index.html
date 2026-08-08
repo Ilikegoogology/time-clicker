@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Clicker - Full Precision Googology</title>
+    <title>Time Clicker - Ellipsis & Full Label</title>
     <style>
         :root {
             --bg-color: #060911;
@@ -94,12 +94,28 @@
             width: 100%;
         }
 
+        /* Truncated main display */
         .seconds-total {
             font-size: 2.8rem;
             font-weight: bold;
             color: var(--accent-color);
-            margin: 10px 0;
+            margin: 10px 0 2px 0;
             word-break: break-all;
+        }
+
+        /* New Full Name Label underneath */
+        .seconds-full-name {
+            font-size: 0.8rem;
+            color: var(--subtext-color);
+            margin-bottom: 12px;
+            word-break: break-all;
+            max-width: 90%;
+            opacity: 0.85;
+            font-family: monospace;
+            background: rgba(0,0,0,0.25);
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .time-formatted {
@@ -497,7 +513,10 @@
     <div class="container">
         <!-- Clicker & Display Panel -->
         <div class="card time-display">
+            <!-- Shortened main display -->
             <div class="seconds-total" id="seconds-display">0s</div>
+            <!-- Full unabbreviated Googological name label -->
+            <div class="seconds-full-name" id="seconds-full-display">Full: 0s</div>
             <div class="time-formatted" id="time-formatted-display">0m 0s</div>
 
             <div class="click-area">
@@ -802,7 +821,8 @@
             return parts.join("");
         }
 
-        function formatNumber(val) {
+        // Format number helper (fullLength = true returns untruncated string)
+        function formatNumber(val, fullLength = false) {
             let num = BigNum.from(val);
             if (num.m === 0) return "0";
 
@@ -820,7 +840,14 @@
             }
 
             let prefix = getGoogologyPrefix(i);
-            return mantissa.toFixed(2) + prefix;
+            let fullString = mantissa.toFixed(2) + prefix;
+
+            // Shorten with ellipsis if requested and longer than 18 chars
+            if (!fullLength && fullString.length > 18) {
+                return fullString.substring(0, 15) + "...";
+            }
+
+            return fullString;
         }
 
         function formatTimeReadable(totalSeconds) {
@@ -974,6 +1001,7 @@
 
         // DOM Elements
         const secondsEl = document.getElementById('seconds-display');
+        const secondsFullEl = document.getElementById('seconds-full-display');
         const formattedEl = document.getElementById('time-formatted-display');
         const spcEl = document.getElementById('spc-display');
         const spsEl = document.getElementById('sps-display');
@@ -1278,7 +1306,11 @@
         // Update UI Loop
         function updateUI() {
             sanitizeState();
-            secondsEl.textContent = `${formatNumber(game.seconds)}s`;
+            // Shortened with ellipsis on main display
+            secondsEl.textContent = `${formatNumber(game.seconds, false)}s`;
+            // Unabbreviated full Googology name in label underneath
+            secondsFullEl.textContent = `Full: ${formatNumber(game.seconds, true)} seconds`;
+
             formattedEl.textContent = formatTimeReadable(game.seconds);
             spcEl.textContent = `+${formatNumber(getClickPower())}s`;
             spsEl.textContent = `${formatNumber(getSPS())}s/sec`;
@@ -1366,7 +1398,7 @@
             game.seconds = BigNum.from(val);
             game.maxSeconds = BigNum.from(val);
             updateUI();
-            console.log("Seconds set to:", formatNumber(game.seconds));
+            console.log("Seconds set to:", formatNumber(game.seconds, true));
         };
 
         window.addSeconds = function(val) {
@@ -1374,13 +1406,13 @@
             game.seconds = game.seconds.add(addVal);
             game.maxSeconds = game.maxSeconds.add(addVal);
             updateUI();
-            console.log("Added seconds. Total:", formatNumber(game.seconds));
+            console.log("Added seconds. Total:", formatNumber(game.seconds, true));
         };
 
         window.setUniverses = function(val) {
             game.universes = BigNum.from(val);
             updateUI();
-            console.log("Universes set to:", formatNumber(game.universes));
+            console.log("Universes set to:", formatNumber(game.universes, true));
         };
 
         window.unlockAllAchievements = function() {
